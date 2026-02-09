@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Time and Distance: Journey Graphs – Mr. McLean Math</title>
+<style>
+  :root{
+    --bg:#f5f5f5;
+    --panel:#ffffff;
+    --text:#1f1f1f;
+    --muted:#5e5e5e;
+    --border:#d9d9d9;
+    --accent:#2b7cff;
+    --accentSoft:#e7f0ff;
+    --good:#1d7a2a;
+    --bad:#b3261e;
+    --shadow:0 8px 22px rgba(0,0,0,0.10);
+    --radius:16px;
+    --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font);
+  }
+  body.high-contrast{
+    --bg:#000;
+    --panel:#0c0c0c;
+    --text:#fff;
+    --muted:#cfcfcf;
+    --border:#3a3a3a;
+    --accent:#7fb2ff;
+    --accentSoft:#0f1a2a;
+    --shadow:none;
+  }
+  .wrap{
+    max-width:1100px;
+    margin:0 auto;
+    padding:16px;
+  }
+  header{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+  }
+  .title{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  h1{
+    margin:0;
+    font-size:22px;
+    line-height:1.2;
+  }
+  .subtitle{
+    margin:0;
+    color:var(--muted);
+    font-size:14px;
+  }
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:14px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns: 420px 1fr;
+    gap:14px;
+    align-items:start;
+  }
+  @media (max-width: 980px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+  .controls{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap:10px;
+  }
+  .control{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  label{
+    font-size:12px;
+    color:var(--muted);
+  }
+  select, input[type="number"], input[type="text"]{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px 10px;
+    background:transparent;
+    color:var(--text);
+    font-size:14px;
+    outline:none;
+  }
+  input[type="checkbox"]{
+    transform: translateY(1px);
+  }
+  .row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .btn{
+    border:1px solid var(--border);
+    background:var(--panel);
+    color:var(--text);
+    padding:10px 12px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:650;
+    font-size:14px;
+  }
+  .btn.primary{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  .btn:disabled{
+    opacity:0.55;
+    cursor:not-allowed;
+  }
+  .hint{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.35;
+  }
+  .canvasWrap{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.0), rgba(0,0,0,0.02));
+    padding:10px;
+  }
+  body.high-contrast .canvasWrap{
+    background:transparent;
+  }
+  canvas{
+    width:100%;
+    height:auto;
+    max-width:760px;
+    border-radius:12px;
+  }
+  .qTitle{
+    margin:0 0 8px 0;
+    font-size:16px;
+  }
+  .choices{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:8px;
+    margin-top:10px;
+  }
+  .choiceBtn{
+    text-align:left;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:10px 12px;
+    background:var(--panel);
+    cursor:pointer;
+    font-size:14px;
+  }
+  .choiceBtn:hover{ border-color:var(--accent); }
+  .choiceBtn.correct{
+    border-color:var(--good);
+    outline:2px solid rgba(29,122,42,0.22);
+  }
+  .choiceBtn.wrong{
+    border-color:var(--bad);
+    outline:2px solid rgba(179,38,30,0.20);
+  }
+  .feedback{
+    margin-top:10px;
+    padding:10px 12px;
+    border-radius:14px;
+    border:1px solid var(--border);
+    background:var(--panel);
+  }
+  .feedback.good{ border-color:rgba(29,122,42,0.55); }
+  .feedback.bad{ border-color:rgba(179,38,30,0.55); }
+  .feedback .big{
+    font-weight:800;
+    margin-bottom:4px;
+  }
+  .footerRow{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:10px;
+  }
+  .scoreBox{
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  /* Worksheet */
+  .worksheetArea{
+    display:none;
+    margin-top:14px;
+  }
+  .worksheetArea.active{ display:block; }
+  .wsHeader{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+  .wsList{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap:12px;
+  }
+  @media (max-width: 980px){
+    .wsList{ grid-template-columns: 1fr; }
+  }
+  .wsCard{
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:10px;
+    background:var(--panel);
+  }
+  .wsCard h3{
+    margin:0 0 8px 0;
+    font-size:14px;
+  }
+  .wsCard img{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:12px;
+    display:block;
+    margin-bottom:8px;
+  }
+  .wsQ{
+    margin:0;
+    font-size:13px;
+    line-height:1.35;
+  }
+  .wsAns{
+    margin-top:8px;
+    border-top:1px dashed var(--border);
+    padding-top:8px;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  @media print{
+    body{ background:#fff; }
+    header, .panel.controlsPanel, .gameOnly, .wsHeader .row{ display:none !important; }
+    .worksheetArea{ display:block !important; }
+    .wsCard{ break-inside:avoid; }
+    .wrap{ max-width:none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title">
+      <h1>Time and Distance: Journey Graphs</h1>
+      <p class="subtitle">Interpret distance-time graphs: steeper means faster, flat means stopped.</p>
+    </div>
+    <div class="row">
+      <button class="btn" id="toggleContrast">High Contrast: Off</button>
+      <button class="btn" id="toggleMode">Mode: Game</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="panel controlsPanel">
+      <div class="controls">
+        <div class="control">
+          <label for="timeStyle">Time labels (x-axis)</label>
+          <select id="timeStyle">
+            <option value="mostlyHours" selected>Mostly hours (sometimes minutes)</option>
+            <option value="hoursOnly">Hours only</option>
+            <option value="minutesOnly">Minutes only</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <label for="maxTime">Max time (hours)</label>
+          <select id="maxTime">
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6" selected>6</option>
+          </select>
+        </div>
+
+        <div class="control" style="grid-column:1 / -1;">
+          <label>Answer type</label>
+          <div class="row" style="gap:10px;">
+            <label style="display:flex;gap:8px;align-items:center;">
+              <input type="checkbox" id="allowFreeInput" checked />
+              <span style="font-size:13px;color:var(--text);">Allow some free input questions</span>
+            </label>
+          </div>
+          <div class="hint">If this is off, everything stays multiple choice.</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn primary" id="newQuestion">New Question</button>
+        <button class="btn" id="resetScore">Reset Score</button>
+      </div>
+
+      <p class="hint" style="margin:10px 0 0 0;">
+        What students should notice:
+        steeper line = faster speed,
+        less steep line = slower speed,
+        horizontal line = stopped (time moves, distance does not).
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="canvasWrap">
+        <canvas id="graph" width="760" height="460" aria-label="Distance time graph"></canvas>
+      </div>
+
+      <div class="gameOnly">
+        <h2 class="qTitle" id="questionText">Press New Question to start.</h2>
+
+        <div id="answerArea"></div>
+
+        <div class="footerRow">
+          <div class="row">
+            <button class="btn primary" id="checkBtn" disabled>Check</button>
+            <button class="btn" id="nextBtn" disabled>Next (Enter)</button>
+          </div>
+          <div class="scoreBox" id="scoreBox">Score: 0 correct out of 0</div>
+        </div>
+
+        <div id="feedbackBox" class="feedback" style="display:none;"></div>
+      </div>
+
+      <div class="worksheetArea" id="worksheetArea">
+        <div class="wsHeader">
+          <div>
+            <div style="font-weight:800;">Worksheet Mode</div>
+            <div class="hint">Generate a printable worksheet with graphs, questions, and an answer key.</div>
+          </div>
+          <div class="row">
+            <label class="hint" for="wsCount" style="margin-right:6px;">Problems</label>
+            <input id="wsCount" type="number" min="5" max="30" value="10" style="width:92px;" />
+            <button class="btn primary" id="genWorksheet">Generate Worksheet</button>
+            <button class="btn" onclick="window.print()">Print</button>
+          </div>
+        </div>
+        <div class="wsList" id="wsList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+  function choice(arr){ return arr[randInt(0, arr.length-1)]; }
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+  function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+  function round1(x){ return Math.round(x*10)/10; }
+  function approxEqual(a,b,eps){ return Math.abs(a-b) < (eps || 1e-9); }
+
+  function formatTime(mins, style){
+    if(style === "minutesOnly"){
+      return mins + " min";
+    }
+    const h = Math.floor(mins/60);
+    const m = mins%60;
+    if(style === "hoursOnly"){
+      return h + " h";
+    }
+    if(m === 0) return h + " h";
+    const mm = (m<10 ? ("0"+m) : (""+m));
+    return h + ":" + mm;
+  }
+
+  function formatInterval(t1, t2, style){
+    return formatTime(t1, style) + " to " + formatTime(t2, style);
+  }
+
+  const canvas = document.getElementById("graph");
+  const ctx = canvas.getContext("2d");
+
+  const timeStyleEl = document.getElementById("timeStyle");
+  const allowFreeInputEl = document.getElementById("allowFreeInput");
+  const maxTimeEl = document.getElementById("maxTime");
+
+  const newQuestionBtn = document.getElementById("newQuestion");
+  const resetScoreBtn = document.getElementById("resetScore");
+  const checkBtn = document.getElementById("checkBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  const questionTextEl = document.getElementById("questionText");
+  const answerArea = document.getElementById("answerArea");
+  const feedbackBox = document.getElementById("feedbackBox");
+  const scoreBox = document.getElementById("scoreBox");
+
+  const toggleContrastBtn = document.getElementById("toggleContrast");
+  const toggleModeBtn = document.getElementById("toggleMode");
+
+  const worksheetArea = document.getElementById("worksheetArea");
+  const wsCountEl = document.getElementById("wsCount");
+  const genWorksheetBtn = document.getElementById("genWorksheet");
+  const wsList = document.getElementById("wsList");
+
+  let isWorksheetMode = false;
+  let current = null;
+  let answered = false;
+  let score = {correct:0, total:0};
+
+  function getSegments(graph){
+    const segs = [];
+    for(let i=0;i<graph.times.length-1;i++){
+      const t1 = graph.times[i], t2 = graph.times[i+1];
+      const d1 = graph.dist[i], d2 = graph.dist[i+1];
+      const dtH = (t2-t1)/60;
+      const dd = (d2-d1);
+      const speed = (dtH === 0) ? 0 : dd/dtH;
+      segs.push({i, t1, t2, d1, d2, dd, dtH, speed});
+    }
+    return segs;
+  }
+
+  // Single-mode generator (replaces easy/medium/hard)
+  function generateGraph(timeStyle, maxHours){
+    const maxMins = maxHours * 60;
+
+    // Mostly hours, sometimes half-hours
+    let step = 60;
+    if(timeStyle !== "hoursOnly"){
+      const wantHalfHours = (Math.random() < 0.40);
+      step = wantHalfHours ? 30 : 60;
+    }
+
+    // 3 to 5 segments
+    const segCount = randInt(3,5);
+
+    const times = [0];
+    let t = 0;
+    while(times.length < segCount + 1){
+      let add = step;
+      if(step === 30 && Math.random() < 0.22) add = 60;
+      if(t + add > maxMins) break;
+      t += add;
+      times.push(t);
+    }
+
+    while(times.length < 4){
+      if(t + step > maxMins) break;
+      t += step;
+      times.push(t);
+    }
+
+    // Distances: clean, student-friendly
+    const dist = [0];
+    let d = 0;
+
+    // 0 to 2 stop segments
+    let stopsLeft = randInt(0,2);
+    let hasMove = false;
+
+    for(let i=1;i<times.length;i++){
+      const dt = (times[i]-times[i-1]) / 60;
+      let delta = 0;
+
+      let doStop = false;
+      if(stopsLeft > 0 && Math.random() < 0.25) doStop = true;
+
+      if(doStop){
+        delta = 0;
+        stopsLeft--;
+      }else{
+        // speeds that keep values reasonable
+        let speedChoices = [30, 40, 50, 60, 70, 80, 90, 100];
+        let speed = choice(speedChoices);
+        delta = speed * dt;
+
+        // Keep mostly whole numbers
+        if(!approxEqual(delta, Math.round(delta))){
+          if(Math.random() < 0.18){
+            delta = round1(delta); // rare .5
+          }else{
+            if(dt === 0.5){
+              speed = choice([40, 60, 80, 100]);
+              delta = speed * dt;
+            }else{
+              delta = Math.round(delta);
+            }
+          }
+        }
+
+        // Keep totals from getting huge
+        if(d + delta > 420){
+          delta = clamp(delta, 0, 420 - d);
+          delta = Math.floor(delta/10)*10;
+          if(delta < 10){ delta = 0; stopsLeft = Math.max(stopsLeft-1,0); }
+        }
+
+        // Snap to 10 km most of the time
+        if(approxEqual(delta, Math.round(delta))){
+          delta = Math.round(delta/10)*10;
+        }
+
+        if(delta > 0) hasMove = true;
+      }
+
+      d = d + delta;
+      dist.push(d);
+    }
+
+    if(!hasMove){
+      const last = dist.length-1;
+      dist[last] = dist[last-1] + 60;
+    }
+
+    for(let i=1;i<dist.length;i++){
+      if(dist[i] < dist[i-1]) dist[i] = dist[i-1];
+    }
+
+    const maxDist = Math.max.apply(null, dist);
+    let yTop = 200;
+    if(maxDist <= 150) yTop = 200;
+    else if(maxDist <= 250) yTop = 300;
+    else if(maxDist <= 350) yTop = 400;
+    else yTop = 500;
+
+    const xTopMins = Math.max(times[times.length-1], 120);
+    const xTop = Math.ceil(xTopMins/60)*60;
+
+    return { times, dist, xTop, yTop };
+  }
+
+  function clearCanvas(){
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+  }
+
+  function drawGraph(graph, timeStyle){
+    clearCanvas();
+
+    const W = canvas.width, H = canvas.height;
+    const padL = 70, padR = 20, padT = 25, padB = 60;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    const panelCol = getComputedStyle(document.body).getPropertyValue("--panel").trim() || "#fff";
+    const borderCol = getComputedStyle(document.body).getPropertyValue("--border").trim() || "#d9d9d9";
+    const mutedCol = getComputedStyle(document.body).getPropertyValue("--muted").trim() || "#666";
+    const textCol  = getComputedStyle(document.body).getPropertyValue("--text").trim() || "#111";
+    const lineCol = "#b3261e";
+
+    ctx.fillStyle = panelCol;
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle = borderCol;
+    ctx.lineWidth = 1;
+
+    let xTick = 60;
+    if(timeStyle !== "hoursOnly" && graph.xTop <= 240 && Math.random() < 0.6) xTick = 30;
+    if(timeStyle === "minutesOnly") xTick = (graph.xTop <= 240 ? 30 : 60);
+
+    const yTick = (graph.yTop <= 300) ? 50 : 100;
+
+    for(let x=0; x<=graph.xTop; x+=xTick){
+      const px = padL + (x/graph.xTop)*plotW;
+      ctx.beginPath();
+      ctx.moveTo(px, padT);
+      ctx.lineTo(px, padT+plotH);
+      ctx.stroke();
+    }
+
+    for(let y=0; y<=graph.yTop; y+=yTick){
+      const py = padT + plotH - (y/graph.yTop)*plotH;
+      ctx.beginPath();
+      ctx.moveTo(padL, py);
+      ctx.lineTo(padL+plotW, py);
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = textCol;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT);
+    ctx.lineTo(padL, padT+plotH);
+    ctx.lineTo(padL+plotW, padT+plotH);
+    ctx.stroke();
+
+    ctx.fillStyle = textCol;
+    ctx.font = "700 14px system-ui, -apple-system, Segoe UI, Arial";
+    ctx.fillText("Distance (km)", 12, 18);
+    ctx.fillText("Time", padL + plotW - 40, padT + plotH + 48);
+
+    ctx.fillStyle = mutedCol;
+    ctx.font = "12px system-ui, -apple-system, Segoe UI, Arial";
+
+    for(let x=0; x<=graph.xTop; x+=xTick){
+      const px = padL + (x/graph.xTop)*plotW;
+      const label = formatTime(x, timeStyle);
+      ctx.textAlign = "center";
+      ctx.fillText(label, px, padT + plotH + 20);
+    }
+
+    for(let y=0; y<=graph.yTop; y+=yTick){
+      const py = padT + plotH - (y/graph.yTop)*plotH;
+      ctx.textAlign = "right";
+      ctx.fillText(String(y), padL - 8, py + 4);
+    }
+
+    function toX(t){ return padL + (t/graph.xTop)*plotW; }
+    function toY(d){ return padT + plotH - (d/graph.yTop)*plotH; }
+
+    ctx.strokeStyle = lineCol;
+    ctx.lineWidth = 6;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(toX(graph.times[0]), toY(graph.dist[0]));
+    for(let i=1;i<graph.times.length;i++){
+      ctx.lineTo(toX(graph.times[i]), toY(graph.dist[i]));
+    }
+    ctx.stroke();
+
+    ctx.fillStyle = lineCol;
+    for(let i=0;i<graph.times.length;i++){
+      ctx.beginPath();
+      ctx.arc(toX(graph.times[i]), toY(graph.dist[i]), 5, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  function generateQuestion(graph, timeStyle, allowFreeInput){
+    const segs = getSegments(graph);
+    const moving = segs.filter(s => s.dd > 0 && s.speed > 0);
+    const stopped = segs.filter(s => s.dd === 0);
+
+    const types = [];
+    if(moving.length >= 1) types.push("fastest");
+    if(moving.length >= 2) types.push("slowestMoving");
+    if(stopped.length >= 1) types.push("stopped");
+    types.push("totalDistance");
+    types.push("distanceBetween");
+    if(stopped.length >= 1) types.push("stopDuration");
+    if(moving.length >= 2) types.push("speedCompareTwo");
+    types.push("distanceAtTime");
+
+    const qType = choice(types);
+
+    const useFreeInput = allowFreeInput && (
+      qType === "totalDistance" || qType === "distanceBetween" || qType === "stopDuration" || qType === "distanceAtTime"
+    ) && (Math.random() < 0.40);
+
+    function intervalLabel(s){ return formatInterval(s.t1, s.t2, timeStyle); }
+
+    function buildMC(prompt, options, correctIndex, explanation){
+      return {type:"mc", prompt:prompt, options:options, correctIndex:correctIndex, answerText: options[correctIndex], explanation:explanation};
+    }
+    function buildInput(prompt, correctValue, unit, explanation){
+      return {type:"input", prompt:prompt, correctValue:correctValue, unit:unit, explanation:explanation};
+    }
+
+    if(qType === "fastest"){
+      let best = moving[0];
+      for(let i=0;i<moving.length;i++){
+        if(moving[i].speed > best.speed) best = moving[i];
+      }
+      let optionsSegs = shuffle(segs.slice()).slice(0, Math.min(4, segs.length));
+      if(!optionsSegs.some(s => s.i === best.i)){
+        optionsSegs[0] = best;
+        optionsSegs = shuffle(optionsSegs);
+      }
+      const options = optionsSegs.map(intervalLabel);
+      const correctIndex = optionsSegs.findIndex(s => s.i === best.i);
+      return buildMC(
+        "Between which times was the person traveling the fastest?",
+        options,
+        correctIndex,
+        "Fastest means the steepest upward section (largest slope)."
+      );
+    }
+
+    if(qType === "slowestMoving"){
+      let worst = moving[0];
+      for(let i=0;i<moving.length;i++){
+        if(moving[i].speed < worst.speed) worst = moving[i];
+      }
+      let optionsSegs = shuffle(segs.slice()).filter(s => s.dd > 0).slice(0, Math.min(4, moving.length));
+      if(optionsSegs.length < 3){
+        optionsSegs = shuffle(segs.slice()).slice(0, Math.min(4, segs.length));
+      }
+      if(!optionsSegs.some(s => s.i === worst.i)){
+        optionsSegs[0] = worst;
+        optionsSegs = shuffle(optionsSegs);
+      }
+      const options = optionsSegs.map(intervalLabel);
+      const correctIndex = optionsSegs.findIndex(s => s.i === worst.i);
+      return buildMC(
+        "Between which times was the person moving the slowest (but still moving)?",
+        options,
+        correctIndex,
+        "Slowest while moving means the least steep upward section (smallest positive slope)."
+      );
+    }
+
+    if(qType === "stopped"){
+      const stopSeg = choice(stopped);
+      let optionsSegs = shuffle(segs.slice()).slice(0, Math.min(4, segs.length));
+      if(!optionsSegs.some(s => s.i === stopSeg.i)){
+        optionsSegs[0] = stopSeg;
+        optionsSegs = shuffle(optionsSegs);
+      }
+      const options = optionsSegs.map(intervalLabel);
+      const correctIndex = optionsSegs.findIndex(s => s.i === stopSeg.i);
+      return buildMC(
+        "Between which times was the person stopped (not moving)?",
+        options,
+        correctIndex,
+        "Stopped means a horizontal line: time increases but distance stays the same."
+      );
+    }
+
+    if(qType === "totalDistance"){
+      const total = graph.dist[graph.dist.length-1];
+      const prompt = "What total distance had the person traveled at the end of the graph? (km)";
+      const expl = "Total distance is the final distance value at the last time point.";
+      if(useFreeInput){
+        return buildInput(prompt, total, "km", expl);
+      }
+      const opts = new Set();
+      opts.add(total);
+      while(opts.size < 4){
+        let d = total + choice([-80,-60,-40,-20,20,40,60,80]);
+        d = Math.max(0, d);
+        d = Math.round(d/10)*10;
+        opts.add(d);
+      }
+      const options = shuffle(Array.from(opts)).map(v => v + " km");
+      const correctIndex = options.findIndex(s => s === (total + " km"));
+      return buildMC(prompt, options, correctIndex, expl);
+    }
+
+    if(qType === "distanceBetween"){
+      const seg = choice(segs);
+      const change = seg.dd;
+      const prompt = "How many kilometers did the person travel from " + formatTime(seg.t1, timeStyle) +
+        " to " + formatTime(seg.t2, timeStyle) + "?";
+      const expl = "Distance traveled on an interval is the rise: distance at end minus distance at start.";
+      if(useFreeInput){
+        return buildInput(prompt, change, "km", expl);
+      }
+      const opts = new Set();
+      opts.add(change);
+      while(opts.size < 4){
+        let d = change + choice([-60,-40,-20,20,40,60]);
+        d = Math.max(0, d);
+        d = Math.round(d/10)*10;
+        opts.add(d);
+      }
+      const options = shuffle(Array.from(opts)).map(v => v + " km");
+      const correctIndex = options.findIndex(s => s === (change + " km"));
+      return buildMC(prompt, options, correctIndex, expl);
+    }
+
+    if(qType === "stopDuration" && stopped.length){
+      const seg = choice(stopped);
+      const mins = seg.t2 - seg.t1;
+      const prompt = "For how long was the person stopped between " + formatTime(seg.t1, timeStyle) +
+        " and " + formatTime(seg.t2, timeStyle) + "? (minutes)";
+      const expl = "When the line is horizontal, the person is stopped. Duration is the time difference.";
+      if(useFreeInput){
+        return buildInput(prompt, mins, "min", expl);
+      }
+      const opts = new Set();
+      opts.add(mins);
+      while(opts.size < 4){
+        let v = mins + choice([-60,-30,-15,15,30,60]);
+        v = clamp(v, 0, 240);
+        v = Math.round(v/15)*15;
+        opts.add(v);
+      }
+      const options = shuffle(Array.from(opts)).map(v => v + " min");
+      const correctIndex = options.findIndex(s => s === (mins + " min"));
+      return buildMC(prompt, options, correctIndex, expl);
+    }
+
+    if(qType === "speedCompareTwo" && moving.length >= 2){
+      const a = choice(moving);
+      let b = choice(moving);
+      let tries = 0;
+      while(b.i === a.i && tries < 10){ b = choice(moving); tries++; }
+      tries = 0;
+      while(approxEqual(a.speed, b.speed) && tries < 10){ b = choice(moving); tries++; }
+
+      const options = [ intervalLabel(a), intervalLabel(b), "They are the same speed" ];
+      let correctIndex = 2;
+      if(a.speed > b.speed) correctIndex = 0;
+      else if(b.speed > a.speed) correctIndex = 1;
+
+      return buildMC(
+        "Which interval shows the faster speed?",
+        options,
+        correctIndex,
+        "Faster speed means a steeper upward line (greater slope)."
+      );
+    }
+
+    if(qType === "distanceAtTime"){
+      const idx = randInt(1, graph.times.length-1);
+      const t = graph.times[idx];
+      const d = graph.dist[idx];
+      const prompt = "What is the distance at time " + formatTime(t, timeStyle) + "? (km)";
+      const expl = "Read the y-value (distance) at that time on the graph.";
+      if(useFreeInput){
+        return buildInput(prompt, d, "km", expl);
+      }
+      const opts = new Set();
+      opts.add(d);
+      while(opts.size < 4){
+        let v = d + choice([-80,-60,-40,-20,20,40,60,80]);
+        v = Math.max(0, v);
+        v = Math.round(v/10)*10;
+        opts.add(v);
+      }
+      const options = shuffle(Array.from(opts)).map(v => v + " km");
+      const correctIndex = options.findIndex(s => s === (d + " km"));
+      return buildMC(prompt, options, correctIndex, expl);
+    }
+
+    return buildMC(
+      "Between which times was the person stopped (not moving)?",
+      segs.slice(0,4).map(intervalLabel),
+      0,
+      "Stopped means a horizontal line."
+    );
+  }
+
+  function setFeedback(kind, title, text){
+    feedbackBox.style.display = "block";
+    feedbackBox.className = "feedback " + (kind === "good" ? "good" : "bad");
+    feedbackBox.innerHTML =
+      '<div class="big">' + title + '</div>' +
+      '<div style="color:var(--muted);font-size:13px;line-height:1.35;">' + text + '</div>';
+  }
+
+  function clearFeedback(){
+    feedbackBox.style.display = "none";
+    feedbackBox.innerHTML = "";
+    feedbackBox.className = "feedback";
+  }
+
+  function updateScoreBox(){
+    scoreBox.textContent = "Score: " + score.correct + " correct out of " + score.total;
+  }
+
+  function renderQuestion(q){
+    questionTextEl.textContent = q.prompt;
+    answered = false;
+    clearFeedback();
+    nextBtn.disabled = true;
+
+    answerArea.innerHTML = "";
+    checkBtn.disabled = false;
+
+    if(q.type === "mc"){
+      const div = document.createElement("div");
+      div.className = "choices";
+      for(let i=0;i<q.options.length;i++){
+        const opt = q.options[i];
+        const b = document.createElement("button");
+        b.className = "choiceBtn";
+        b.type = "button";
+        b.textContent = opt;
+        b.addEventListener("click", function(){
+          if(answered) return;
+          const btns = div.querySelectorAll(".choiceBtn");
+          for(let k=0;k<btns.length;k++){
+            btns[k].dataset.selected = "0";
+            btns[k].style.borderColor = "";
+          }
+          b.dataset.selected = "1";
+          b.style.borderColor = "var(--accent)";
+        });
+        div.appendChild(b);
+      }
+      answerArea.appendChild(div);
+    }else{
+      const row = document.createElement("div");
+      row.className = "row";
+      row.style.marginTop = "10px";
+      row.style.alignItems = "center";
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.id = "freeInput";
+      input.placeholder = "Type your answer";
+      input.autocomplete = "off";
+      input.inputMode = "decimal";
+      input.style.maxWidth = "220px";
+
+      const unit = document.createElement("div");
+      unit.className = "hint";
+      unit.style.fontWeight = "700";
+      unit.textContent = q.unit;
+
+      row.appendChild(input);
+      row.appendChild(unit);
+      answerArea.appendChild(row);
+
+      input.addEventListener("keydown", function(e){
+        if(e.key === "Enter"){
+          if(!checkBtn.disabled) checkBtn.click();
+          else if(!nextBtn.disabled) nextBtn.click();
+        }
+      });
+    }
+  }
+
+  function getSelectedMCIndex(){
+    const btns = answerArea.querySelectorAll(".choiceBtn");
+    for(let i=0;i<btns.length;i++){
+      if(btns[i].dataset.selected === "1") return i;
+    }
+    return -1;
+  }
+
+  function checkAnswer(){
+    if(!current || answered) return;
+    const q = current.question;
+
+    if(q.type === "mc"){
+      const idx = getSelectedMCIndex();
+      if(idx === -1){
+        setFeedback("bad", "Pick an answer first.", "Choose one option, then press Check.");
+        return;
+      }
+      answered = true;
+      score.total += 1;
+
+      const btns = answerArea.querySelectorAll(".choiceBtn");
+      for(let i=0;i<btns.length;i++){
+        btns[i].disabled = true;
+        if(i === q.correctIndex) btns[i].classList.add("correct");
+        if(i === idx && i !== q.correctIndex) btns[i].classList.add("wrong");
+      }
+
+      if(idx === q.correctIndex){
+        score.correct += 1;
+        setFeedback("good", "Correct!", q.explanation);
+      }else{
+        setFeedback("bad", "Not quite.", "Correct answer: " + q.answerText + ". " + q.explanation);
+      }
+
+      updateScoreBox();
+      checkBtn.disabled = true;
+      nextBtn.disabled = false;
+      return;
+    }
+
+    const input = document.getElementById("freeInput");
+    const raw = (input ? input.value : "").trim().replace(",", ".");
+    if(raw.length === 0){
+      setFeedback("bad", "Type an answer first.", "Then press Check.");
+      return;
+    }
+
+    const numMatch = raw.match(/-?\d+(\.\d+)?/);
+    if(!numMatch){
+      setFeedback("bad", "That does not look like a number.", "Try again.");
+      return;
+    }
+
+    const val = Number(numMatch[0]);
+    if(Number.isNaN(val)){
+      setFeedback("bad", "That does not look like a number.", "Try again.");
+      return;
+    }
+
+    answered = true;
+    score.total += 1;
+
+    const correct = Number(q.correctValue);
+    const ok = Math.abs(val - correct) < 0.05;
+
+    input.disabled = true;
+
+    if(ok){
+      score.correct += 1;
+      setFeedback("good", "Correct!", q.explanation);
+    }else{
+      setFeedback("bad", "Not quite.", "Correct answer: " + correct + " " + q.unit + ". " + q.explanation);
+    }
+
+    updateScoreBox();
+    checkBtn.disabled = true;
+    nextBtn.disabled = false;
+  }
+
+  function buildNew(){
+    const timeStyle = timeStyleEl.value;
+    const maxHours = Number(maxTimeEl.value);
+    const allowFreeInput = allowFreeInputEl.checked;
+
+    const graph = generateGraph(timeStyle, maxHours);
+    const question = generateQuestion(graph, timeStyle, allowFreeInput);
+
+    current = {graph:graph, question:question};
+
+    drawGraph(graph, timeStyle);
+    renderQuestion(question);
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function getAnswerKeyLine(q){
+    if(q.type === "mc"){
+      const letters = ["A","B","C","D","E"];
+      const letter = letters[q.correctIndex] || "A";
+      return letter + " (" + q.answerText + ")";
+    }
+    return q.correctValue + " " + q.unit;
+  }
+
+  function generateWorksheet(){
+    const timeStyle = timeStyleEl.value;
+    const maxHours = Number(maxTimeEl.value);
+    const allowFreeInput = allowFreeInputEl.checked;
+
+    const n = clamp(Number(wsCountEl.value || 10), 5, 30);
+    wsList.innerHTML = "";
+
+    const saved = current ? JSON.parse(JSON.stringify({
+      graph: current.graph,
+      question: current.question
+    })) : null;
+
+    for(let i=1;i<=n;i++){
+      const graph = generateGraph(timeStyle, maxHours);
+      const q = generateQuestion(graph, timeStyle, allowFreeInput);
+
+      // For printing: prefer MC most of the time
+      let qPrint = q;
+      if(q.type === "input" && Math.random() < 0.6){
+        const correct = q.correctValue;
+        const opts = new Set();
+        opts.add(correct);
+
+        while(opts.size < 4){
+          let v = correct + choice([-80,-60,-40,-20,20,40,60,80]);
+          v = Math.max(0, v);
+          v = Math.round(v/10)*10;
+          opts.add(v);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " " + q.unit);
+        const correctIndex = options.findIndex(s => s === (correct + " " + q.unit));
+        qPrint = {
+          type:"mc",
+          prompt:q.prompt,
+          options:options,
+          correctIndex:correctIndex,
+          answerText: options[correctIndex],
+          explanation:q.explanation
+        };
+      }
+
+      drawGraph(graph, timeStyle);
+      const img = canvas.toDataURL("image/png");
+
+      const card = document.createElement("div");
+      card.className = "wsCard";
+      card.innerHTML =
+        '<h3>Problem ' + i + '</h3>' +
+        '<img alt="Graph for problem ' + i + '" src="' + img + '" />' +
+        '<p class="wsQ">' + escapeHtml(qPrint.prompt) + '</p>' +
+        (qPrint.type === "mc" ? (
+          '<div class="wsQ" style="margin-top:6px;color:var(--muted);">' +
+          'A) ' + escapeHtml(qPrint.options[0]) + '<br/>' +
+          'B) ' + escapeHtml(qPrint.options[1]) + '<br/>' +
+          'C) ' + escapeHtml(qPrint.options[2]) + '<br/>' +
+          'D) ' + escapeHtml(qPrint.options[3] || qPrint.options[2]) +
+          '</div>'
+        ) : '') +
+        '<div class="wsAns"><b>Answer key:</b> ' + escapeHtml(getAnswerKeyLine(qPrint)) + '</div>';
+
+      wsList.appendChild(card);
+    }
+
+    if(saved){
+      current = saved;
+      drawGraph(current.graph, timeStyleEl.value);
+      renderQuestion(current.question);
+    }else{
+      clearCanvas();
+      questionTextEl.textContent = "Press New Question to start.";
+      answerArea.innerHTML = "";
+      checkBtn.disabled = true;
+      nextBtn.disabled = true;
+      clearFeedback();
+    }
+  }
+
+  function setModeWorksheet(on){
+    isWorksheetMode = on;
+    worksheetArea.classList.toggle("active", on);
+    const gameOnlyEls = document.querySelectorAll(".gameOnly");
+    for(let i=0;i<gameOnlyEls.length;i++){
+      gameOnlyEls[i].style.display = on ? "none" : "block";
+    }
+    toggleModeBtn.textContent = "Mode: " + (on ? "Worksheet" : "Game");
+  }
+
+  function setContrast(on){
+    document.body.classList.toggle("high-contrast", on);
+    toggleContrastBtn.textContent = "High Contrast: " + (on ? "On" : "Off");
+    if(current && !isWorksheetMode){
+      drawGraph(current.graph, timeStyleEl.value);
+    }
+  }
+
+  newQuestionBtn.addEventListener("click", function(){
+    setModeWorksheet(false);
+    buildNew();
+  });
+
+  resetScoreBtn.addEventListener("click", function(){
+    score.correct = 0;
+    score.total = 0;
+    updateScoreBox();
+    clearFeedback();
+    answered = false;
+    nextBtn.disabled = true;
+    checkBtn.disabled = current ? false : true;
+  });
+
+  checkBtn.addEventListener("click", checkAnswer);
+
+  nextBtn.addEventListener("click", function(){
+    if(nextBtn.disabled) return;
+    buildNew();
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(isWorksheetMode) return;
+    if(e.key === "Enter"){
+      if(!nextBtn.disabled) nextBtn.click();
+      else if(!checkBtn.disabled) checkBtn.click();
+    }
+  });
+
+  timeStyleEl.addEventListener("change", function(){
+    if(current && !isWorksheetMode){
+      drawGraph(current.graph, timeStyleEl.value);
+    }
+  });
+
+  toggleContrastBtn.addEventListener("click", function(){
+    setContrast(!document.body.classList.contains("high-contrast"));
+  });
+
+  toggleModeBtn.addEventListener("click", function(){
+    setModeWorksheet(!isWorksheetMode);
+  });
+
+  genWorksheetBtn.addEventListener("click", function(){
+    setModeWorksheet(true);
+    generateWorksheet();
+  });
+
+  updateScoreBox();
+  setContrast(false);
+  setModeWorksheet(false);
+
+})();
+</script>
+</body>
+</html>
