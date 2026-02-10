@@ -434,13 +434,33 @@
       const d1 = graph.dist[i], d2 = graph.dist[i+1];
       const dtH = (t2-t1)/60;
       const dd = (d2-d1);
-      const speed = (dtH === 0) ? 0 : (dd/dtH); // km/h (can be negative)
+      const speed = (dtH === 0) ? 0 : (dd/dtH); // can be negative
       segs.push({i, t1, t2, d1, d2, dd, dtH, speed});
     }
     return segs;
   }
 
-  // Single-mode generator (optionally allows return trips = downward segments)
+  // --- Slope clarity controls ---
+  // Speeds spaced further apart and we avoid picking two that are too close.
+  const SPEEDS_KMH = [25, 45, 65, 85, 105]; // big steps => visually different slopes
+  const MIN_SPEED_DIFF = 18;                // if two moving segments are closer than this, re-pick
+
+  function pickSeparatedSpeed(existingAbsSpeeds){
+    // existingAbsSpeeds: array of |speed| already used on other moving segments
+    for(let tries=0; tries<30; tries++){
+      const s = choice(SPEEDS_KMH);
+      let ok = true;
+      for(let i=0;i<existingAbsSpeeds.length;i++){
+        if(Math.abs(s - existingAbsSpeeds[i]) < MIN_SPEED_DIFF){
+          ok = false; break;
+        }
+      }
+      if(ok) return s;
+    }
+    // fallback
+    return choice(SPEEDS_KMH);
+  }
+
   function generateGraph(timeStyle, maxHours, allowReturnTrips){
     const maxMins = maxHours * 60;
 
@@ -473,41 +493,38 @@
     let hasMove = false;
     let hasDown = false;
 
+    // Track chosen speed magnitudes to keep slopes clearly different
+    const usedAbsSpeeds = [];
+
     for(let i=1;i<times.length;i++){
       const dt = (times[i]-times[i-1]) / 60;
       let delta = 0;
 
-      // stops
       if(stopsLeft > 0 && Math.random() < 0.22){
         delta = 0;
         stopsLeft--;
       }else{
-        // choose movement up or down
-        const canGoDown = allowReturnTrips && d > 0; // can't go below 0
+        const canGoDown = allowReturnTrips && d > 0;
         const downProb = canGoDown ? 0.22 : 0.0;
         const goDown = Math.random() < downProb;
 
-        // speeds
-        const speedChoices = [30,40,50,60,70,80,90,100];
-        let speed = choice(speedChoices);
-        let magnitude = speed * dt;
+        // pick a separated speed (magnitude)
+        let speedMag = pickSeparatedSpeed(usedAbsSpeeds);
+        let magnitude = speedMag * dt;
 
-        // keep mostly whole numbers
+        // Keep mostly whole numbers; for half-hours it will naturally be .5 multiples sometimes.
         if(!approxEqual(magnitude, Math.round(magnitude))){
-          if(Math.random() < 0.15){
-            magnitude = round1(magnitude); // rare .5
-          }else{
-            if(dt === 0.5){
-              speed = choice([40,60,80,100]);
-              magnitude = speed * dt;
-            }else{
-              magnitude = Math.round(magnitude);
-            }
+          // keep rare .5, but not messy decimals
+          magnitude = round1(magnitude);
+          // if still messy, snap
+          if(!approxEqual(magnitude*2, Math.round(magnitude*2))){
+            magnitude = Math.round(magnitude);
           }
         }
 
+        // Snap integer magnitudes to 10km so worksheet looks clean
         if(approxEqual(magnitude, Math.round(magnitude))){
-          magnitude = Math.round(magnitude/10)*10; // snap
+          magnitude = Math.round(magnitude/10)*10;
         }
 
         delta = goDown ? -magnitude : magnitude;
@@ -522,7 +539,23 @@
           delta = -Math.floor(Math.abs(delta)/10)*10;
         }
 
-        if(delta !== 0) hasMove = true;
+        // If we snapped down to 0 movement, try once more with a different speed
+        if(delta === 0){
+          speedMag = pickSeparatedSpeed(usedAbsSpeeds);
+          magnitude = speedMag * dt;
+          if(!approxEqual(magnitude, Math.round(magnitude))) magnitude = round1(magnitude);
+          if(approxEqual(magnitude, Math.round(magnitude))) magnitude = Math.round(magnitude/10)*10;
+          delta = goDown ? -magnitude : magnitude;
+          if(d + delta > 420) delta = 420 - d;
+          if(d + delta < 0) delta = -d;
+        }
+
+        // Record speed magnitude if this segment actually moved
+        if(delta !== 0){
+          hasMove = true;
+          const absSpeed = Math.abs(delta) / dt; // actual realized speed after snapping
+          usedAbsSpeeds.push(absSpeed);
+        }
         if(delta < 0) hasDown = true;
       }
 
@@ -536,10 +569,7 @@
       dist[last] = clamp(dist[last-1] + 60, 0, 420);
     }
 
-    // If return trips are allowed, try to ensure we sometimes get at least one down segment
-    // but don't force it every time.
     if(allowReturnTrips && !hasDown && Math.random() < 0.55){
-      // create a return on the last segment if possible
       const n = dist.length;
       if(n >= 3 && dist[n-2] > 0){
         const back = Math.min(dist[n-2], 60);
@@ -658,7 +688,6 @@
   }
 
   function totalDistanceTraveled(segs){
-    // sum of absolute changes
     let sum = 0;
     for(let i=0;i<segs.length;i++) sum += Math.abs(segs[i].dd);
     return sum;
@@ -677,26 +706,37 @@
   }
 
   function turningPointTime(segs){
-    // turning point occurs where dd changes sign (up then down, or down then up)
     for(let i=1;i<segs.length;i++){
       const a = segs[i-1].dd;
       const b = segs[i].dd;
-      if(a > 0 && b < 0) return segs[i].t1; // time at start of the down segment
+      if(a > 0 && b < 0) return segs[i].t1;
       if(a < 0 && b > 0) return segs[i].t1;
     }
     return null;
   }
 
+  // Ensure fastest/slowest isn't too close:
+  // If top two slope magnitudes are too close, we regen graph/question.
+  const MIN_SPEED_GAP_FOR_QUESTIONS = 15; // km/h
+
+  function slopeGapOkForFastest(movingSegs){
+    if(movingSegs.length < 2) return true;
+    const mags = movingSegs.map(s => Math.abs(s.speed)).sort((a,b)=>b-a);
+    return (mags[0] - mags[1]) >= MIN_SPEED_GAP_FOR_QUESTIONS;
+  }
+  function slopeGapOkForSlowest(movingSegs){
+    if(movingSegs.length < 2) return true;
+    const mags = movingSegs.map(s => Math.abs(s.speed)).sort((a,b)=>a-b);
+    return (mags[1] - mags[0]) >= MIN_SPEED_GAP_FOR_QUESTIONS;
+  }
+
   function generateQuestion(graph, timeStyle, allowFreeInput){
     const segs = getSegments(graph);
     const moving = segs.filter(s => s.dd !== 0);
-    const movingUp = segs.filter(s => s.dd > 0);
     const movingDown = segs.filter(s => s.dd < 0);
     const stopped = segs.filter(s => s.dd === 0);
 
     const types = [];
-
-    // Existing types (updated to use absolute slope for speed comparisons)
     if(moving.length >= 1) types.push("fastestAbs");
     if(moving.length >= 2) types.push("slowestAbs");
     if(stopped.length >= 1) types.push("stopped");
@@ -706,14 +746,12 @@
     if(moving.length >= 2) types.push("speedCompareTwoAbs");
     types.push("distanceAtTime");
 
-    // NEW types if downward exists
     if(movingDown.length >= 1) types.push("movingBack");
-    // NEW turning point + maximum distance if graph goes up and then down
     const turnT = turningPointTime(segs);
     if(turnT !== null) types.push("turnAround");
     types.push("greatestDistance");
-    types.push("distanceFromStartEnd"); // same as end y-value but concept framed
-    if(movingDown.length >= 1) types.push("totalDistanceTraveled"); // displacement vs distance
+    types.push("distanceFromStartEnd");
+    if(movingDown.length >= 1) types.push("totalDistanceTraveled");
 
     const qType = choice(types);
 
@@ -728,20 +766,17 @@
     ) && (Math.random() < 0.40);
 
     function intervalLabel(s){ return formatInterval(s.t1, s.t2, timeStyle); }
-
     function buildMC(prompt, options, correctIndex, explanation){
-      return {type:"mc", prompt:prompt, options:options, correctIndex:correctIndex, answerText: options[correctIndex], explanation:explanation};
+      return {type:"mc", prompt, options, correctIndex, answerText: options[correctIndex], explanation};
     }
     function buildInput(prompt, correctValue, unit, explanation){
-      return {type:"input", prompt:prompt, correctValue:correctValue, unit:unit, explanation:explanation};
+      return {type:"input", prompt, correctValue, unit, explanation};
     }
 
     if(qType === "fastestAbs"){
-      // fastest speed magnitude = steepest line either up or down
       let best = moving[0];
-      for(let i=0;i<moving.length;i++){
-        if(Math.abs(moving[i].speed) > Math.abs(best.speed)) best = moving[i];
-      }
+      for(const s of moving){ if(Math.abs(s.speed) > Math.abs(best.speed)) best = s; }
+
       let optionsSegs = shuffle(segs.slice()).slice(0, Math.min(4, segs.length));
       if(!optionsSegs.some(s => s.i === best.i)){
         optionsSegs[0] = best;
@@ -749,6 +784,7 @@
       }
       const options = optionsSegs.map(intervalLabel);
       const correctIndex = optionsSegs.findIndex(s => s.i === best.i);
+
       return buildMC(
         "Between which times was the person moving the fastest?",
         options,
@@ -758,11 +794,9 @@
     }
 
     if(qType === "slowestAbs"){
-      // slowest while moving = smallest non-zero slope magnitude
       let worst = moving[0];
-      for(let i=0;i<moving.length;i++){
-        if(Math.abs(moving[i].speed) < Math.abs(worst.speed)) worst = moving[i];
-      }
+      for(const s of moving){ if(Math.abs(s.speed) < Math.abs(worst.speed)) worst = s; }
+
       let optionsSegs = shuffle(moving.slice()).slice(0, Math.min(4, moving.length));
       if(!optionsSegs.some(s => s.i === worst.i)){
         optionsSegs[0] = worst;
@@ -770,6 +804,7 @@
       }
       const options = optionsSegs.map(intervalLabel);
       const correctIndex = optionsSegs.findIndex(s => s.i === worst.i);
+
       return buildMC(
         "Between which times was the person moving the slowest (but still moving)?",
         options,
@@ -816,13 +851,10 @@
       const tTurn = turningPointTime(segs);
       const prompt = "At what time did the person turn around (change direction)?";
       const expl = "Turning around is where the graph changes from going up to going down (or down to up).";
-
-      // Make MC with time options
       const opts = new Set();
       opts.add(tTurn);
       while(opts.size < 4){
-        const t = choice(graph.times.slice(1)); // pick existing times
-        opts.add(t);
+        opts.add(choice(graph.times.slice(1)));
       }
       const options = shuffle(Array.from(opts)).map(t => formatTime(t, timeStyle));
       const correctIndex = options.findIndex(s => s === formatTime(tTurn, timeStyle));
@@ -833,112 +865,87 @@
       const info = maxDistanceInfo(graph);
       const prompt = "What is the greatest distance from the start on this graph? (km)";
       const expl = "The greatest distance is the highest y-value reached on the graph.";
+      if(useFreeInput) return buildInput(prompt, info.d, "km", expl);
 
-      if(useFreeInput){
-        return buildInput(prompt, info.d, "km", expl);
-      }else{
-        const opts = new Set();
-        opts.add(info.d);
-        while(opts.size < 4){
-          let v = info.d + choice([-80,-60,-40,-20,20,40,60,80]);
-          v = Math.max(0, v);
-          v = Math.round(v/10)*10;
-          opts.add(v);
-        }
-        const options = shuffle(Array.from(opts)).map(v => v + " km");
-        const correctIndex = options.findIndex(s => s === (info.d + " km"));
-        return buildMC(prompt, options, correctIndex, expl);
+      const opts = new Set([info.d]);
+      while(opts.size < 4){
+        let v = Math.max(0, info.d + choice([-80,-60,-40,-20,20,40,60,80]));
+        v = Math.round(v/10)*10;
+        opts.add(v);
       }
+      const options = shuffle(Array.from(opts)).map(v => v + " km");
+      const correctIndex = options.findIndex(s => s === (info.d + " km"));
+      return buildMC(prompt, options, correctIndex, expl);
     }
 
     if(qType === "distanceFromStartEnd"){
       const endD = graph.dist[graph.dist.length-1];
       const prompt = "How far from the start is the person at the end of the graph? (km)";
       const expl = "This is the final y-value (distance) at the last time point.";
+      if(useFreeInput) return buildInput(prompt, endD, "km", expl);
 
-      if(useFreeInput){
-        return buildInput(prompt, endD, "km", expl);
-      }else{
-        const opts = new Set();
-        opts.add(endD);
-        while(opts.size < 4){
-          let v = endD + choice([-80,-60,-40,-20,20,40,60,80]);
-          v = Math.max(0, v);
-          v = Math.round(v/10)*10;
-          opts.add(v);
-        }
-        const options = shuffle(Array.from(opts)).map(v => v + " km");
-        const correctIndex = options.findIndex(s => s === (endD + " km"));
-        return buildMC(prompt, options, correctIndex, expl);
+      const opts = new Set([endD]);
+      while(opts.size < 4){
+        let v = Math.max(0, endD + choice([-80,-60,-40,-20,20,40,60,80]));
+        v = Math.round(v/10)*10;
+        opts.add(v);
       }
+      const options = shuffle(Array.from(opts)).map(v => v + " km");
+      const correctIndex = options.findIndex(s => s === (endD + " km"));
+      return buildMC(prompt, options, correctIndex, expl);
     }
 
     if(qType === "totalDistanceTraveled"){
       const total = totalDistanceTraveled(segs);
       const prompt = "What total distance did the person travel in all? (km)";
       const expl = "Total distance traveled adds up all movement, even when returning (sum of up and down distances).";
+      if(useFreeInput) return buildInput(prompt, total, "km", expl);
 
-      if(useFreeInput){
-        return buildInput(prompt, total, "km", expl);
-      }else{
-        const opts = new Set();
-        opts.add(total);
-        while(opts.size < 4){
-          let v = total + choice([-80,-60,-40,-20,20,40,60,80]);
-          v = Math.max(0, v);
-          v = Math.round(v/10)*10;
-          opts.add(v);
-        }
-        const options = shuffle(Array.from(opts)).map(v => v + " km");
-        const correctIndex = options.findIndex(s => s === (total + " km"));
-        return buildMC(prompt, options, correctIndex, expl);
+      const opts = new Set([total]);
+      while(opts.size < 4){
+        let v = Math.max(0, total + choice([-80,-60,-40,-20,20,40,60,80]));
+        v = Math.round(v/10)*10;
+        opts.add(v);
       }
+      const options = shuffle(Array.from(opts)).map(v => v + " km");
+      const correctIndex = options.findIndex(s => s === (total + " km"));
+      return buildMC(prompt, options, correctIndex, expl);
     }
 
     if(qType === "totalDistanceEnd"){
       const total = graph.dist[graph.dist.length-1];
       const prompt = "What distance is shown at the end of the graph? (km)";
       const expl = "Read the final y-value at the last time point.";
+      if(useFreeInput) return buildInput(prompt, total, "km", expl);
 
-      if(useFreeInput){
-        return buildInput(prompt, total, "km", expl);
-      }else{
-        const opts = new Set();
-        opts.add(total);
-        while(opts.size < 4){
-          let d = total + choice([-80,-60,-40,-20,20,40,60,80]);
-          d = Math.max(0, d);
-          d = Math.round(d/10)*10;
-          opts.add(d);
-        }
-        const options = shuffle(Array.from(opts)).map(v => v + " km");
-        const correctIndex = options.findIndex(s => s === (total + " km"));
-        return buildMC(prompt, options, correctIndex, expl);
+      const opts = new Set([total]);
+      while(opts.size < 4){
+        let v = Math.max(0, total + choice([-80,-60,-40,-20,20,40,60,80]));
+        v = Math.round(v/10)*10;
+        opts.add(v);
       }
+      const options = shuffle(Array.from(opts)).map(v => v + " km");
+      const correctIndex = options.findIndex(s => s === (total + " km"));
+      return buildMC(prompt, options, correctIndex, expl);
     }
 
     if(qType === "distanceBetween"){
       const seg = choice(segs);
-      const change = Math.abs(seg.dd); // distance traveled during that interval (regardless of direction)
+      const change = Math.abs(seg.dd);
       const prompt = "How many kilometers did the person travel from " + formatTime(seg.t1, timeStyle) +
         " to " + formatTime(seg.t2, timeStyle) + "?";
       const expl = "Travel distance on an interval is the amount of change (absolute change in distance).";
+      if(useFreeInput) return buildInput(prompt, change, "km", expl);
 
-      if(useFreeInput){
-        return buildInput(prompt, change, "km", expl);
-      }else{
-        const opts = new Set();
-        opts.add(change);
-        while(opts.size < 4){
-          let d = change + choice([-60,-40,-20,20,40,60]);
-          d = Math.max(0, d);
-          d = Math.round(d/10)*10;
-          opts.add(d);
-        }
-        const options = shuffle(Array.from(opts)).map(v => v + " km");
-        const correctIndex = options.findIndex(s => s === (change + " km"));
-        return buildMC(prompt, options, correctIndex, expl);
+      const opts = new Set([change]);
+      while(opts.size < 4){
+        let v = Math.max(0, change + choice([-60,-40,-20,20,40,60]));
+        v = Math.round(v/10)*10;
+        opts.add(v);
       }
+      const options = shuffle(Array.from(opts)).map(v => v + " km");
+      const correctIndex = options.findIndex(s => s === (change + " km"));
+      return buildMC(prompt, options, correctIndex, expl);
     }
 
     if(qType === "stopDuration" && stopped.length){
@@ -947,22 +954,17 @@
       const prompt = "For how long was the person stopped between " + formatTime(seg.t1, timeStyle) +
         " and " + formatTime(seg.t2, timeStyle) + "? (minutes)";
       const expl = "When the line is horizontal, the person is stopped. Duration is the time difference.";
+      if(useFreeInput) return buildInput(prompt, mins, "min", expl);
 
-      if(useFreeInput){
-        return buildInput(prompt, mins, "min", expl);
-      }else{
-        const opts = new Set();
-        opts.add(mins);
-        while(opts.size < 4){
-          let v = mins + choice([-60,-30,-15,15,30,60]);
-          v = clamp(v, 0, 240);
-          v = Math.round(v/15)*15;
-          opts.add(v);
-        }
-        const options = shuffle(Array.from(opts)).map(v => v + " min");
-        const correctIndex = options.findIndex(s => s === (mins + " min"));
-        return buildMC(prompt, options, correctIndex, expl);
+      const opts = new Set([mins]);
+      while(opts.size < 4){
+        let v = clamp(mins + choice([-60,-30,-15,15,30,60]), 0, 240);
+        v = Math.round(v/15)*15;
+        opts.add(v);
       }
+      const options = shuffle(Array.from(opts)).map(v => v + " min");
+      const correctIndex = options.findIndex(s => s === (mins + " min"));
+      return buildMC(prompt, options, correctIndex, expl);
     }
 
     if(qType === "speedCompareTwoAbs" && moving.length >= 2){
@@ -971,7 +973,12 @@
       let tries = 0;
       while(b.i === a.i && tries < 10){ b = choice(moving); tries++; }
 
-      const options = [ formatInterval(a.t1,a.t2,timeStyle), formatInterval(b.t1,b.t2,timeStyle), "They are the same speed" ];
+      const options = [
+        formatInterval(a.t1,a.t2,timeStyle),
+        formatInterval(b.t1,b.t2,timeStyle),
+        "They are the same speed"
+      ];
+
       let correctIndex = 2;
       if(Math.abs(a.speed) > Math.abs(b.speed)) correctIndex = 0;
       else if(Math.abs(b.speed) > Math.abs(a.speed)) correctIndex = 1;
@@ -990,32 +997,27 @@
       const d = graph.dist[idx];
       const prompt = "What is the distance at time " + formatTime(t, timeStyle) + "? (km)";
       const expl = "Read the y-value (distance) at that time on the graph.";
+      if(useFreeInput) return buildInput(prompt, d, "km", expl);
 
-      if(useFreeInput){
-        return buildInput(prompt, d, "km", expl);
-      }else{
-        const opts = new Set();
-        opts.add(d);
-        while(opts.size < 4){
-          let v = d + choice([-80,-60,-40,-20,20,40,60,80]);
-          v = Math.max(0, v);
-          v = Math.round(v/10)*10;
-          opts.add(v);
-        }
-        const options = shuffle(Array.from(opts)).map(v => v + " km");
-        const correctIndex = options.findIndex(s => s === (d + " km"));
-        return buildMC(prompt, options, correctIndex, expl);
+      const opts = new Set([d]);
+      while(opts.size < 4){
+        let v = Math.max(0, d + choice([-80,-60,-40,-20,20,40,60,80]));
+        v = Math.round(v/10)*10;
+        opts.add(v);
       }
+      const options = shuffle(Array.from(opts)).map(v => v + " km");
+      const correctIndex = options.findIndex(s => s === (d + " km"));
+      return buildMC(prompt, options, correctIndex, expl);
     }
 
     // fallback
-    const segs2 = segs.slice(0,4);
+    const s0 = segs[0];
     return {
       type:"mc",
       prompt:"Between which times was the person stopped (not moving)?",
-      options: segs2.map(s=>formatInterval(s.t1,s.t2,timeStyle)),
+      options: segs.slice(0,4).map(s=>formatInterval(s.t1,s.t2,timeStyle)),
       correctIndex: 0,
-      answerText: segs2[0] ? formatInterval(segs2[0].t1,segs2[0].t2,timeStyle) : "",
+      answerText: s0 ? formatInterval(s0.t1,s0.t2,timeStyle) : "",
       explanation:"Stopped means a horizontal line."
     };
   }
@@ -1048,24 +1050,22 @@
     if(q.type === "mc"){
       const div = document.createElement("div");
       div.className = "choices";
-      for(let i=0;i<q.options.length;i++){
-        const opt = q.options[i];
+      q.options.forEach(opt => {
         const b = document.createElement("button");
         b.className = "choiceBtn";
         b.type = "button";
         b.textContent = opt;
-        b.addEventListener("click", function(){
+        b.addEventListener("click", () => {
           if(answered) return;
-          const btns = div.querySelectorAll(".choiceBtn");
-          for(let k=0;k<btns.length;k++){
-            btns[k].dataset.selected = "0";
-            btns[k].style.borderColor = "";
-          }
+          div.querySelectorAll(".choiceBtn").forEach(btn => {
+            btn.dataset.selected = "0";
+            btn.style.borderColor = "";
+          });
           b.dataset.selected = "1";
           b.style.borderColor = "var(--accent)";
         });
         div.appendChild(b);
-      }
+      });
       answerArea.appendChild(div);
     }else{
       const row = document.createElement("div");
@@ -1090,7 +1090,7 @@
       row.appendChild(unit);
       answerArea.appendChild(row);
 
-      input.addEventListener("keydown", function(e){
+      input.addEventListener("keydown", (e) => {
         if(e.key === "Enter"){
           if(!checkBtn.disabled) checkBtn.click();
           else if(!nextBtn.disabled) nextBtn.click();
@@ -1121,11 +1121,11 @@
       score.total += 1;
 
       const btns = answerArea.querySelectorAll(".choiceBtn");
-      for(let i=0;i<btns.length;i++){
-        btns[i].disabled = true;
-        if(i === q.correctIndex) btns[i].classList.add("correct");
-        if(i === idx && i !== q.correctIndex) btns[i].classList.add("wrong");
-      }
+      btns.forEach((b,i) => {
+        b.disabled = true;
+        if(i === q.correctIndex) b.classList.add("correct");
+        if(i === idx && i !== q.correctIndex) b.classList.add("wrong");
+      });
 
       if(idx === q.correctIndex){
         score.correct += 1;
@@ -1147,13 +1147,12 @@
       return;
     }
 
-    const numMatch = raw.match(/-?\d+(\.\d+)?/);
-    if(!numMatch){
+    const m = raw.match(/-?\d+(\.\d+)?/);
+    if(!m){
       setFeedback("bad", "That does not look like a number.", "Try again.");
       return;
     }
-
-    const val = Number(numMatch[0]);
+    const val = Number(m[0]);
     if(Number.isNaN(val)){
       setFeedback("bad", "That does not look like a number.", "Try again.");
       return;
@@ -1185,11 +1184,30 @@
     const allowFreeInput = allowFreeInputEl.checked;
     const allowReturnTrips = allowReturnTripsEl.checked;
 
+    // Regenerate until slope questions have a clear winner (avoids near-parallel confusion)
+    for(let tries=0; tries<25; tries++){
+      const graph = generateGraph(timeStyle, maxHours, allowReturnTrips);
+      const segs = getSegments(graph);
+      const moving = segs.filter(s => s.dd !== 0);
+
+      // If a fastest/slowest question is selected later, we want this graph to be safe.
+      // We enforce clear gaps among moving speeds generally.
+      const okFast = slopeGapOkForFastest(moving);
+      const okSlow = slopeGapOkForSlowest(moving);
+
+      if(okFast && okSlow){
+        const question = generateQuestion(graph, timeStyle, allowFreeInput);
+        current = {graph, question};
+        drawGraph(graph, timeStyle);
+        renderQuestion(question);
+        return;
+      }
+    }
+
+    // Fallback (should be rare)
     const graph = generateGraph(timeStyle, maxHours, allowReturnTrips);
     const question = generateQuestion(graph, timeStyle, allowFreeInput);
-
-    current = {graph:graph, question:question};
-
+    current = {graph, question};
     drawGraph(graph, timeStyle);
     renderQuestion(question);
   }
@@ -1227,7 +1245,18 @@
     })) : null;
 
     for(let i=1;i<=n;i++){
-      const graph = generateGraph(timeStyle, maxHours, allowReturnTrips);
+      let graph = null;
+
+      // Ensure worksheet graphs also avoid near-parallel slopes
+      for(let tries=0; tries<25; tries++){
+        const g = generateGraph(timeStyle, maxHours, allowReturnTrips);
+        const moving = getSegments(g).filter(s => s.dd !== 0);
+        if(slopeGapOkForFastest(moving) && slopeGapOkForSlowest(moving)){
+          graph = g; break;
+        }
+      }
+      if(!graph) graph = generateGraph(timeStyle, maxHours, allowReturnTrips);
+
       const q = generateQuestion(graph, timeStyle, allowFreeInput);
 
       // For printing: prefer MC most of the time
@@ -1235,12 +1264,10 @@
       if(q.type === "input" && Math.random() < 0.6){
         const correct = q.correctValue;
         const unit = q.unit;
-        const opts = new Set();
-        opts.add(correct);
+        const opts = new Set([correct]);
 
         while(opts.size < 4){
-          let v = correct + choice([-80,-60,-40,-20,20,40,60,80]);
-          v = Math.max(0, v);
+          let v = Math.max(0, correct + choice([-80,-60,-40,-20,20,40,60,80]));
           v = Math.round(v/10)*10;
           opts.add(v);
         }
@@ -1249,8 +1276,8 @@
         qPrint = {
           type:"mc",
           prompt:q.prompt,
-          options:options,
-          correctIndex:correctIndex,
+          options,
+          correctIndex,
           answerText: options[correctIndex],
           explanation:q.explanation
         };
@@ -1295,10 +1322,9 @@
   function setModeWorksheet(on){
     isWorksheetMode = on;
     worksheetArea.classList.toggle("active", on);
-    const gameOnlyEls = document.querySelectorAll(".gameOnly");
-    for(let i=0;i<gameOnlyEls.length;i++){
-      gameOnlyEls[i].style.display = on ? "none" : "block";
-    }
+    document.querySelectorAll(".gameOnly").forEach(el => {
+      el.style.display = on ? "none" : "block";
+    });
     toggleModeBtn.textContent = "Mode: " + (on ? "Worksheet" : "Game");
   }
 
@@ -1310,12 +1336,12 @@
     }
   }
 
-  newQuestionBtn.addEventListener("click", function(){
+  newQuestionBtn.addEventListener("click", () => {
     setModeWorksheet(false);
     buildNew();
   });
 
-  resetScoreBtn.addEventListener("click", function(){
+  resetScoreBtn.addEventListener("click", () => {
     score.correct = 0;
     score.total = 0;
     updateScoreBox();
@@ -1327,12 +1353,12 @@
 
   checkBtn.addEventListener("click", checkAnswer);
 
-  nextBtn.addEventListener("click", function(){
+  nextBtn.addEventListener("click", () => {
     if(nextBtn.disabled) return;
     buildNew();
   });
 
-  document.addEventListener("keydown", function(e){
+  document.addEventListener("keydown", (e) => {
     if(isWorksheetMode) return;
     if(e.key === "Enter"){
       if(!nextBtn.disabled) nextBtn.click();
@@ -1340,21 +1366,21 @@
     }
   });
 
-  timeStyleEl.addEventListener("change", function(){
+  timeStyleEl.addEventListener("change", () => {
     if(current && !isWorksheetMode){
       drawGraph(current.graph, timeStyleEl.value);
     }
   });
 
-  toggleContrastBtn.addEventListener("click", function(){
+  toggleContrastBtn.addEventListener("click", () => {
     setContrast(!document.body.classList.contains("high-contrast"));
   });
 
-  toggleModeBtn.addEventListener("click", function(){
+  toggleModeBtn.addEventListener("click", () => {
     setModeWorksheet(!isWorksheetMode);
   });
 
-  genWorksheetBtn.addEventListener("click", function(){
+  genWorksheetBtn.addEventListener("click", () => {
     setModeWorksheet(true);
     generateWorksheet();
   });
