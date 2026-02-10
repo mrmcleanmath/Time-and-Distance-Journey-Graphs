@@ -1,1149 +1,1369 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pi Memory Challenge | Mr. McLean Math</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Time and Distance: Journey Graphs – Mr. McLean Math</title>
+<style>
+  :root{
+    --bg:#f5f5f5;
+    --panel:#ffffff;
+    --text:#1f1f1f;
+    --muted:#5e5e5e;
+    --border:#d9d9d9;
+    --accent:#2b7cff;
+    --good:#1d7a2a;
+    --bad:#b3261e;
+    --shadow:0 8px 22px rgba(0,0,0,0.10);
+    --radius:16px;
+    --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font);
+  }
+  body.high-contrast{
+    --bg:#000;
+    --panel:#0c0c0c;
+    --text:#fff;
+    --muted:#cfcfcf;
+    --border:#3a3a3a;
+    --accent:#7fb2ff;
+    --shadow:none;
+  }
+  .wrap{
+    max-width:1100px;
+    margin:0 auto;
+    padding:16px;
+  }
+  header{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+  }
+  .title{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  h1{
+    margin:0;
+    font-size:22px;
+    line-height:1.2;
+  }
+  .subtitle{
+    margin:0;
+    color:var(--muted);
+    font-size:14px;
+  }
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:14px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns: 420px 1fr;
+    gap:14px;
+    align-items:start;
+  }
+  @media (max-width: 980px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+  .controls{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap:10px;
+  }
+  .control{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  label{
+    font-size:12px;
+    color:var(--muted);
+  }
+  select, input[type="number"], input[type="text"]{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px 10px;
+    background:transparent;
+    color:var(--text);
+    font-size:14px;
+    outline:none;
+  }
+  input[type="checkbox"]{
+    transform: translateY(1px);
+  }
+  .row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .btn{
+    border:1px solid var(--border);
+    background:var(--panel);
+    color:var(--text);
+    padding:10px 12px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:650;
+    font-size:14px;
+  }
+  .btn.primary{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  .btn:disabled{
+    opacity:0.55;
+    cursor:not-allowed;
+  }
+  .hint{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.35;
+  }
+  .canvasWrap{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.0), rgba(0,0,0,0.02));
+    padding:10px;
+  }
+  body.high-contrast .canvasWrap{ background:transparent; }
+  canvas{
+    width:100%;
+    height:auto;
+    max-width:760px;
+    border-radius:12px;
+  }
+  .qTitle{
+    margin:0 0 8px 0;
+    font-size:16px;
+  }
+  .choices{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:8px;
+    margin-top:10px;
+  }
+  .choiceBtn{
+    text-align:left;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:10px 12px;
+    background:var(--panel);
+    cursor:pointer;
+    font-size:14px;
+  }
+  .choiceBtn:hover{ border-color:var(--accent); }
+  .choiceBtn.correct{
+    border-color:var(--good);
+    outline:2px solid rgba(29,122,42,0.22);
+  }
+  .choiceBtn.wrong{
+    border-color:var(--bad);
+    outline:2px solid rgba(179,38,30,0.20);
+  }
+  .feedback{
+    margin-top:10px;
+    padding:10px 12px;
+    border-radius:14px;
+    border:1px solid var(--border);
+    background:var(--panel);
+  }
+  .feedback.good{ border-color:rgba(29,122,42,0.55); }
+  .feedback.bad{ border-color:rgba(179,38,30,0.55); }
+  .feedback .big{
+    font-weight:800;
+    margin-bottom:4px;
+  }
+  .footerRow{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:10px;
+  }
+  .scoreBox{
+    color:var(--muted);
+    font-size:13px;
+  }
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
+  /* Worksheet */
+  .worksheetArea{ display:none; margin-top:14px; }
+  .worksheetArea.active{ display:block; }
+  .wsHeader{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+  .wsList{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap:12px;
+  }
+  @media (max-width: 980px){
+    .wsList{ grid-template-columns: 1fr; }
+  }
+  .wsCard{
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:10px;
+    background:var(--panel);
+  }
+  .wsCard h3{ margin:0 0 8px 0; font-size:14px; }
+  .wsCard img{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:12px;
+    display:block;
+    margin-bottom:8px;
+  }
+  .wsQ{ margin:0; font-size:13px; line-height:1.35; }
+  .wsAns{
+    margin-top:8px;
+    border-top:1px dashed var(--border);
+    padding-top:8px;
+    color:var(--muted);
+    font-size:13px;
+  }
 
-  <style>
-    :root{
-      --bg1:#070a14;
-      --bg2:#0b1020;
-      --border: rgba(255,255,255,.16);
-      --text:#f4f7ff;
-      --muted:#b9c2e1;
-      --accent:#6aa7ff;
-      --accent2:#8b5cff;
-      --ok:#34e7a5;
-      --bad:#ff5a7a;
-      --gold:#ffd166;
-
-      --shadow: 0 18px 55px rgba(0,0,0,.50);
-    }
-
-    *{ box-sizing:border-box; }
-
-    body{
-      margin:0;
-      font-family:"Rubik", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
-      min-height:100vh;
-      background:
-        radial-gradient(900px 540px at 15% 15%, rgba(106,167,255,.26), transparent 60%),
-        radial-gradient(900px 540px at 85% 25%, rgba(139,92,255,.24), transparent 60%),
-        radial-gradient(800px 540px at 50% 90%, rgba(255,209,102,.10), transparent 55%),
-        linear-gradient(160deg, var(--bg1), var(--bg2));
-      overflow-x:hidden;
-    }
-
-    .bgGlow{
-      position:fixed;
-      inset:-80px;
-      background:
-        radial-gradient(420px 220px at 20% 30%, rgba(106,167,255,.14), transparent 65%),
-        radial-gradient(420px 220px at 75% 40%, rgba(139,92,255,.14), transparent 65%),
-        radial-gradient(320px 200px at 55% 75%, rgba(255,209,102,.08), transparent 70%);
-      filter: blur(18px);
-      animation: floatGlow 10s ease-in-out infinite alternate;
-      pointer-events:none;
-      z-index:-1;
-    }
-    @keyframes floatGlow{
-      from{ transform: translate3d(-10px,-10px,0) scale(1.02); opacity:.95; }
-      to  { transform: translate3d(12px,10px,0) scale(1.04); opacity:1; }
-    }
-
-    .wrap{
-      max-width:980px;
-      margin:0 auto;
-      padding:26px 14px 18px;
-    }
-
-    header{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:14px;
-    }
-
-    .title h1{
-      margin:0;
-      font-family:"Bungee", system-ui, sans-serif;
-      font-size:38px;
-      letter-spacing:.7px;
-      line-height:1;
-      text-shadow: 0 10px 25px rgba(0,0,0,.55);
-    }
-    .title .sub{
-      margin-top:10px;
-      color:var(--muted);
-      font-weight:700;
-      font-size:15px;
-      line-height:1.35;
-    }
-
-    .hud{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:flex-end;
-    }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.06);
-      box-shadow: 0 12px 28px rgba(0,0,0,.35);
-      color:var(--muted);
-      font-size:14px;
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:.05em;
-    }
-    .pill b{ color:var(--text); font-weight:900; }
-
-    .pill.score{
-      border-color: rgba(255,209,102,.28);
-      box-shadow: 0 12px 28px rgba(0,0,0,.35), 0 0 18px rgba(255,209,102,.10);
-    }
-    .pill.score b{
-      color:var(--gold);
-      font-size:18px;
-      letter-spacing:0;
-      text-transform:none;
-    }
-
-    .card{
-      position:relative;
-      border-radius:22px;
-      padding:18px;
-      border:1px solid var(--border);
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .card:before{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background:
-        radial-gradient(520px 220px at 20% 0%, rgba(106,167,255,.22), transparent 60%),
-        radial-gradient(520px 220px at 85% 25%, rgba(139,92,255,.20), transparent 60%);
-      pointer-events:none;
-    }
-    .card > *{ position:relative; }
-
-    .how{
-      color:var(--muted);
-      font-size:16px;
-      font-weight:700;
-      line-height:1.45;
-    }
-    .how b{ color:var(--text); }
-
-    .digitsBox{
-      margin-top:14px;
-      padding:14px 14px 16px;
-      border:1px solid rgba(255,255,255,.20);
-      border-radius:18px;
-      background: linear-gradient(180deg, rgba(10,16,32,.65), rgba(12,18,40,.45));
-      box-shadow: 0 14px 30px rgba(0,0,0,.36);
-    }
-    .digitsBox .label{
-      display:block;
-      font-size:12px;
-      color:rgba(185,194,225,.95);
-      text-transform:uppercase;
-      letter-spacing:.10em;
-      font-weight:900;
-      margin-bottom:8px;
-    }
-
-    #typedSoFar{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      font-size:30px;
-      line-height:1.35;
-      overflow-wrap:anywhere;
-      text-shadow: 0 6px 16px rgba(0,0,0,.55);
-    }
-
-    .controls{
-      margin-top:14px;
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    input[type="text"]{
-      width:180px;
-      font-size:30px;
-      padding:12px 14px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.20);
-      background: rgba(255,255,255,.07);
-      color:var(--text);
-      outline:none;
-      box-shadow: 0 14px 30px rgba(0,0,0,.34);
-    }
-    input[type="text"]::placeholder{
-      color: rgba(244,247,255,.55);
-      font-weight:700;
-    }
-    input[type="text"]:focus{
-      border-color: rgba(106,167,255,.60);
-      box-shadow: 0 0 0 5px rgba(106,167,255,.18), 0 16px 36px rgba(0,0,0,.45);
-    }
-
-    button{
-      border-radius:18px;
-      padding:12px 14px;
-      border:1px solid rgba(255,255,255,.20);
-      background: rgba(255,255,255,.06);
-      color:var(--text);
-      cursor:pointer;
-      font-size:14px;
-      font-weight:900;
-      text-transform:uppercase;
-      letter-spacing:.05em;
-      box-shadow: 0 14px 30px rgba(0,0,0,.30);
-      transition: transform .08s ease;
-    }
-    button:hover{ transform: translateY(-1px); }
-    button:active{ transform: translateY(0px); }
-    button:disabled{ opacity:.55; cursor:not-allowed; }
-
-    button.primary{
-      border: none;
-      background: linear-gradient(135deg, rgba(106,167,255,.98), rgba(139,92,255,.92));
-      box-shadow: 0 16px 36px rgba(106,167,255,.18), 0 16px 36px rgba(139,92,255,.12);
-    }
-
-    .status{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.20);
-      color:var(--muted);
-      font-weight:900;
-      letter-spacing:.02em;
-      min-height:42px;
-    }
-    .status.ok{
-      border-color: rgba(52,231,165,.35);
-      color: var(--ok);
-      box-shadow: 0 0 0 4px rgba(52,231,165,.10);
-    }
-    .status.bad{
-      border-color: rgba(255,90,122,.35);
-      color: var(--bad);
-      box-shadow: 0 0 0 4px rgba(255,90,122,.10);
-    }
-
-    .pop{ animation: pop .22s ease-out; }
-    @keyframes pop{
-      from{ transform: scale(.92); }
-      to{ transform: scale(1); }
-    }
-
-    /* ---- DROPDOWN VISIBILITY FIX ---- */
-    select{
-      border-radius:14px;
-      padding:10px 12px;
-      border:1px solid rgba(255,255,255,.20);
-      background: rgba(14,20,44,.95);
-      color: var(--text);
-      font-weight:900;
-      letter-spacing:.02em;
-      box-shadow: 0 14px 30px rgba(0,0,0,.30);
-      outline:none;
-      appearance:auto;
-      -webkit-appearance:auto;
-      -moz-appearance:auto;
-    }
-    select:focus{
-      border-color: rgba(106,167,255,.60);
-      box-shadow: 0 0 0 5px rgba(106,167,255,.18), 0 16px 36px rgba(0,0,0,.45);
-    }
-    select option{
-      background:#0b1020;
-      color:#f4f7ff;
-    }
-
-    .results{ margin-top:16px; display:none; }
-
-    .resultsGrid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:14px;
-      margin-top:12px;
-    }
-    @media (min-width: 840px){
-      .resultsGrid{ grid-template-columns: 1.05fr .95fr; }
-    }
-
-    .panel{
-      border:1px solid rgba(255,255,255,.16);
-      border-radius:20px;
-      padding:14px;
-      background: linear-gradient(180deg, rgba(10,16,32,.70), rgba(12,18,40,.55));
-      box-shadow: 0 16px 36px rgba(0,0,0,.38);
-      min-width: 0;
-    }
-
-    .panel h2{
-      margin:0 0 10px;
-      font-size:18px;
-      font-weight:1000;
-      letter-spacing:.05em;
-      text-transform:uppercase;
-      color:rgba(244,247,255,.95);
-    }
-
-    .kv{
-      margin:8px 0;
-      color: var(--muted);
-      font-size:16px;
-      font-weight:700;
-    }
-    .kv b{
-      color:rgba(244,247,255,.92);
-      display:inline-block;
-      min-width:170px;
-    }
-
-    .small{
-      font-size:13px;
-      color: rgba(185,194,225,.95);
-      font-weight:700;
-      line-height:1.35;
-      margin-top:8px;
-    }
-
-    /* ---------- RESULT IMAGE CARD ---------- */
-    #shotTarget{
-      width: 100%;
-      max-width: 100%;
-      border: 2px solid rgba(106,167,255,.78);
-      border-radius: 22px;
-      padding: 18px;
-      background: #0b1020;
-      color: #f4f7ff;
-      box-shadow: 0 18px 45px rgba(0,0,0,.48);
-      overflow: hidden;
-    }
-
-    #shotTarget .top{
-      display:grid;
-      grid-template-columns: 120px 1fr;
-      gap:14px;
-      align-items:start;
-      border-bottom:1px solid rgba(255,255,255,.18);
-      padding-bottom:12px;
-      margin-bottom:12px;
-      min-width:0;
-    }
-
-    #shotTarget .scoreBox{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      align-items:flex-start;
-    }
-    #shotTarget .scoreLabel{
-      color:rgba(185,194,225,.95);
-      font-weight:900;
-      letter-spacing:.05em;
-      text-transform:uppercase;
-      font-size:12px;
-      line-height:1.2;
-    }
-    #shotTarget .bigScore{
-      font-size:54px;
-      font-weight:1000;
-      color: var(--gold);
-      text-shadow: 0 10px 20px rgba(0,0,0,.55);
-      line-height:1;
-    }
-
-    #shotTarget .brand{
-      font-family:"Bungee", system-ui, sans-serif;
-      font-size:18px;
-      letter-spacing:.7px;
-      line-height:1.1;
-      overflow-wrap:anywhere;
-    }
-    #shotTarget .time{
-      color:rgba(185,194,225,.95);
-      font-size:14px;
-      font-weight:800;
-      margin-top:8px;
-    }
-
-    #shotTarget .digitsTitle{
-      color:rgba(185,194,225,.95);
-      font-weight:900;
-      letter-spacing:.05em;
-      text-transform:uppercase;
-      font-size:13px;
-      margin-top:2px;
-    }
-
-    #shotTarget .digitsSmall{
-      margin-top:10px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      font-size:16px;
-      line-height:1.35;
-      border:1px solid rgba(255,255,255,.16);
-      border-radius:16px;
-      padding:12px;
-      background: rgba(255,255,255,.05);
-      overflow-wrap:anywhere;
-      max-height:180px;
-      overflow:auto;
-    }
-
-    @media (max-width: 520px){
-      #shotTarget .top{ grid-template-columns: 1fr; }
-    }
-
-    .note{
-      margin-top:10px;
-      color: rgba(185,194,225,.95);
-      font-size:13px;
-      font-weight:700;
-      line-height:1.35;
-    }
-
-    .footer{
-      margin-top:14px;
-      text-align:center;
-      color: rgba(185,194,225,.85);
-      font-size:12px;
-      letter-spacing:.06em;
-      text-transform:uppercase;
-      font-weight:900;
-      padding:10px 8px 0;
-    }
-
-    /* ---------- PI DIGITS PRACTICE SECTION ---------- */
-    .practiceRow{
-      margin-top:14px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:14px;
-    }
-    @media (min-width: 840px){
-      .practiceRow{ grid-template-columns: 1fr 1fr; }
-    }
-
-    details.practice{
-      border:1px solid rgba(255,255,255,.16);
-      border-radius:20px;
-      background: linear-gradient(180deg, rgba(10,16,32,.70), rgba(12,18,40,.55));
-      box-shadow: 0 16px 36px rgba(0,0,0,.38);
-      overflow:hidden;
-    }
-    details.practice summary{
-      cursor:pointer;
-      list-style:none;
-      padding:14px;
-      user-select:none;
-      font-weight:1000;
-      letter-spacing:.05em;
-      text-transform:uppercase;
-      color:rgba(244,247,255,.95);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-    details.practice summary::-webkit-details-marker{ display:none; }
-    .chev{ opacity:.85; font-weight:1000; }
-    details.practice[open] .chev{ transform: rotate(180deg); }
-
-    .practiceBody{
-      padding:0 14px 14px;
-      color:var(--muted);
-      font-weight:700;
-      line-height:1.35;
-    }
-    .digitsPracticeBox{
-      margin-top:10px;
-      border:1px solid rgba(255,255,255,.16);
-      border-radius:16px;
-      padding:12px;
-      background: rgba(255,255,255,.05);
-    }
-
-    /* Practice digits container */
-    .digitsPracticeText{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      font-size:16px;
-      line-height:1.4;
-      overflow:auto;
-      max-height:260px;
-      white-space:pre-wrap;
-      overflow-wrap:anywhere;
-      color:rgba(244,247,255,.95);
-    }
-
-    .miniControls{
-      margin-top:10px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    /* Highlight the last correct digit */
-    .piChar{
-      padding: 1px 2px;
-      border-radius: 6px;
-    }
-    .piChar.stopMark{
-      background: rgba(255, 209, 102, .22);
-      outline: 2px solid rgba(255, 209, 102, .70);
-      box-shadow: 0 0 0 3px rgba(255, 209, 102, .10);
-    }
-  </style>
+  @media print{
+    body{ background:#fff; }
+    header, .panel.controlsPanel, .gameOnly, .wsHeader .row{ display:none !important; }
+    .worksheetArea{ display:block !important; }
+    .wsCard{ break-inside:avoid; }
+    .wrap{ max-width:none; }
+  }
+</style>
 </head>
-
 <body>
-  <div class="bgGlow"></div>
+<div class="wrap">
+  <header>
+    <div class="title">
+      <h1>Time and Distance: Journey Graphs</h1>
+      <p class="subtitle">Steeper = faster. Flat = stopped. Downward = moving back toward the start.</p>
+    </div>
+    <div class="row">
+      <button class="btn" id="toggleContrast">High Contrast: Off</button>
+      <button class="btn" id="toggleMode">Mode: Game</button>
+    </div>
+  </header>
 
-  <div class="wrap">
-    <header>
-      <div class="title">
-        <h1>Pi Memory Challenge</h1>
-        <div class="sub" id="subtitle">Type one character at a time (no Enter). One mistake ends the run.</div>
-      </div>
-
-      <div class="hud">
-        <div class="pill">Allowed: <b>0-9</b> <span>and</span> <b>.</b> <span>or</span> <b>,</b></div>
-        <div class="pill score">Score: <b id="liveScore">0</b></div>
-      </div>
-    </header>
-
-    <div class="card">
-      <div class="how">
-        Start with <b>3</b>, then <b>.</b> (or <b>,</b>), then keep going. The moment you enter a wrong character, the run ends and you can download your result image.
-      </div>
-
-      <div class="digitsBox" aria-live="polite">
-        <span class="label">Your digits so far</span>
-        <span id="typedSoFar">-</span>
-      </div>
-
+  <div class="grid">
+    <div class="panel controlsPanel">
       <div class="controls">
-        <input id="charInput" type="text" inputmode="text" autocomplete="off" maxlength="1" placeholder="Type" />
-        <button id="startBtn" class="primary">Start / Restart</button>
+        <div class="control">
+          <label for="timeStyle">Time labels (x-axis)</label>
+          <select id="timeStyle">
+            <option value="mostlyHours" selected>Mostly hours (sometimes minutes)</option>
+            <option value="hoursOnly">Hours only</option>
+            <option value="minutesOnly">Minutes only</option>
+          </select>
+        </div>
 
-        <select id="inputMode" aria-label="Input mode">
-          <option value="instant" selected>Instant mode (no Enter)</option>
-          <option value="enter">Enter mode (press Enter)</option>
-        </select>
+        <div class="control">
+          <label for="maxTime">Max time (hours)</label>
+          <select id="maxTime">
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6" selected>6</option>
+          </select>
+        </div>
 
-        <span id="status" class="status">Click Start to begin.</span>
-      </div>
-
-      <div class="practiceRow">
-        <details class="practice" id="practiceDetails">
-          <summary>
-            Pi digits (practice here)
-            <span class="chev">v</span>
-          </summary>
-          <div class="practiceBody">
-            This list is built into the app. After a run ends, the last correct digit will be highlighted so students can see what they need to beat.
-            <div class="digitsPracticeBox">
-              <div class="digitsPracticeText" id="piDigitsText">Loading pi digits...</div>
-              <div class="miniControls">
-                <button id="copyPiBtn">Copy pi digits</button>
-                <button id="toggleGroupingBtn">Toggle grouping</button>
-              </div>
-              <div class="small">
-                Tip: Grouping can make memorization easier (for example, blocks of 5).
-              </div>
-            </div>
+        <div class="control" style="grid-column:1 / -1;">
+          <label>Answer type</label>
+          <div class="row" style="gap:10px;">
+            <label style="display:flex;gap:8px;align-items:center;">
+              <input type="checkbox" id="allowFreeInput" checked />
+              <span style="font-size:13px;color:var(--text);">Allow some free input questions</span>
+            </label>
           </div>
-        </details>
+          <div class="hint">If this is off, everything stays multiple choice.</div>
+        </div>
 
-        <details class="practice">
-          <summary>
-            Quick practice idea
-            <span class="chev">v</span>
-          </summary>
-          <div class="practiceBody">
-            A simple routine that works well:
-            <div class="small">
-              1) Read 10 digits aloud as a class.<br>
-              2) Close the digits panel.<br>
-              3) Students do a run and try to beat their previous score.<br>
-              4) Repeat once more at the end of the week and compare progress.
-            </div>
+        <div class="control" style="grid-column:1 / -1;">
+          <label>Graph features</label>
+          <div class="row" style="gap:10px;">
+            <label style="display:flex;gap:8px;align-items:center;">
+              <input type="checkbox" id="allowReturnTrips" checked />
+              <span style="font-size:13px;color:var(--text);">Allow return trips (downward lines)</span>
+            </label>
           </div>
-        </details>
-      </div>
-
-      <div id="results" class="results">
-        <div class="resultsGrid">
-          <div class="panel">
-            <h2>Result</h2>
-            <div class="kv"><b>Correct characters:</b> <span id="scoreChars">0</span></div>
-            <div class="kv"><b>Digits after decimal:</b> <span id="scoreDigits">0</span></div>
-            <div class="kv"><b>Time:</b> <span id="timeStamp">-</span></div>
-
-            <div class="kv" id="mistakeRow" style="display:none;">
-              <b>First mistake:</b> <span id="mistakeInfo">-</span>
-            </div>
-
-            <div class="note">
-              Click <b>Download result image</b>, then attach the PNG in Gmail and email it to your teacher.
-            </div>
-          </div>
-
-          <div class="panel">
-            <h2>Result Image</h2>
-
-            <div id="shotTarget">
-              <div class="top">
-                <div class="scoreBox">
-                  <div class="scoreLabel">Digits after decimal</div>
-                  <div class="bigScore" id="shotScore">0</div>
-                </div>
-
-                <div>
-                  <div class="brand">Pi Memory Challenge</div>
-                  <div class="time" id="shotTime">-</div>
-                </div>
-              </div>
-
-              <div class="digitsTitle">Digits reached</div>
-              <div class="digitsSmall" id="shotDigits">-</div>
-
-              <div class="digitsTitle" id="shotMistakeTitle" style="margin-top:10px; display:none;">First mistake</div>
-              <div class="digitsSmall" id="shotMistake" style="display:none;">-</div>
-            </div>
-
-            <div class="controls" style="margin-top:12px;">
-              <button id="downloadBtn" class="primary">Download result image</button>
-              <button id="copyBtn">Copy image</button>
-            </div>
-
-            <div class="note">
-              If copy does not work on school devices, use Download instead.
-            </div>
-          </div>
+          <div class="hint">Downward slope means moving back toward the start, not back in time.</div>
         </div>
       </div>
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn primary" id="newQuestion">New Question</button>
+        <button class="btn" id="resetScore">Reset Score</button>
+      </div>
+
+      <p class="hint" style="margin:10px 0 0 0;">
+        Key ideas:
+        time always increases (x-axis),
+        distance increases when moving away,
+        distance decreases when returning,
+        flat means stopped.
+      </p>
     </div>
 
-    <div class="footer">Created by Mr. McLean Math</div>
+    <div class="panel">
+      <div class="canvasWrap">
+        <canvas id="graph" width="760" height="460" aria-label="Distance time graph"></canvas>
+      </div>
+
+      <div class="gameOnly">
+        <h2 class="qTitle" id="questionText">Press New Question to start.</h2>
+
+        <div id="answerArea"></div>
+
+        <div class="footerRow">
+          <div class="row">
+            <button class="btn primary" id="checkBtn" disabled>Check</button>
+            <button class="btn" id="nextBtn" disabled>Next (Enter)</button>
+          </div>
+          <div class="scoreBox" id="scoreBox">Score: 0 correct out of 0</div>
+        </div>
+
+        <div id="feedbackBox" class="feedback" style="display:none;"></div>
+      </div>
+
+      <div class="worksheetArea" id="worksheetArea">
+        <div class="wsHeader">
+          <div>
+            <div style="font-weight:800;">Worksheet Mode</div>
+            <div class="hint">Generate a printable worksheet with graphs, questions, and an answer key.</div>
+          </div>
+          <div class="row">
+            <label class="hint" for="wsCount" style="margin-right:6px;">Problems</label>
+            <input id="wsCount" type="number" min="5" max="30" value="10" style="width:92px;" />
+            <button class="btn primary" id="genWorksheet">Generate Worksheet</button>
+            <button class="btn" onclick="window.print()">Print</button>
+          </div>
+        </div>
+        <div class="wsList" id="wsList"></div>
+      </div>
+    </div>
   </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+(function(){
+  "use strict";
 
-  <script>
-    const PI =
-      "3.14159265358979323846264338327950288419716939937510" +
-      "58209749445923078164062862089986280348253421170679" +
-      "82148086513282306647093844609550582231725359408128" +
-      "48111745028410270193852110555964462294895493038196" +
-      "44288109756659334461284756482337867831652712019091" +
-      "45648566923460348610454326648213393607260249141273" +
-      "72458700660631558817488152092096282925409171536436" +
-      "78925903600113305305488204665213841469519415116094";
+  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+  function choice(arr){ return arr[randInt(0, arr.length-1)]; }
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+  function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+  function round1(x){ return Math.round(x*10)/10; }
+  function approxEqual(a,b,eps){ return Math.abs(a-b) < (eps || 1e-9); }
 
-    const typedSoFarEl = document.getElementById("typedSoFar");
-    const charInput = document.getElementById("charInput");
-    const startBtn = document.getElementById("startBtn");
-    const statusEl = document.getElementById("status");
-    const subtitleEl = document.getElementById("subtitle");
+  function formatTime(mins, style){
+    if(style === "minutesOnly") return mins + " min";
+    const h = Math.floor(mins/60);
+    const m = mins%60;
+    if(style === "hoursOnly") return h + " h";
+    if(m === 0) return h + " h";
+    const mm = (m<10 ? ("0"+m) : (""+m));
+    return h + ":" + mm;
+  }
+  function formatInterval(t1, t2, style){
+    return formatTime(t1, style) + " to " + formatTime(t2, style);
+  }
 
-    const resultsEl = document.getElementById("results");
-    const scoreCharsEl = document.getElementById("scoreChars");
-    const scoreDigitsEl = document.getElementById("scoreDigits");
-    const timeStampEl = document.getElementById("timeStamp");
-    const liveScoreEl = document.getElementById("liveScore");
+  const canvas = document.getElementById("graph");
+  const ctx = canvas.getContext("2d");
 
-    const shotTimeEl = document.getElementById("shotTime");
-    const shotScoreEl = document.getElementById("shotScore");
-    const shotDigitsEl = document.getElementById("shotDigits");
+  const timeStyleEl = document.getElementById("timeStyle");
+  const allowFreeInputEl = document.getElementById("allowFreeInput");
+  const allowReturnTripsEl = document.getElementById("allowReturnTrips");
+  const maxTimeEl = document.getElementById("maxTime");
 
-    const downloadBtn = document.getElementById("downloadBtn");
-    const copyBtn = document.getElementById("copyBtn");
-    const shotTarget = document.getElementById("shotTarget");
+  const newQuestionBtn = document.getElementById("newQuestion");
+  const resetScoreBtn = document.getElementById("resetScore");
+  const checkBtn = document.getElementById("checkBtn");
+  const nextBtn = document.getElementById("nextBtn");
 
-    const inputModeSel = document.getElementById("inputMode");
+  const questionTextEl = document.getElementById("questionText");
+  const answerArea = document.getElementById("answerArea");
+  const feedbackBox = document.getElementById("feedbackBox");
+  const scoreBox = document.getElementById("scoreBox");
 
-    const mistakeRow = document.getElementById("mistakeRow");
-    const mistakeInfoEl = document.getElementById("mistakeInfo");
-    const shotMistakeTitle = document.getElementById("shotMistakeTitle");
-    const shotMistakeEl = document.getElementById("shotMistake");
+  const toggleContrastBtn = document.getElementById("toggleContrast");
+  const toggleModeBtn = document.getElementById("toggleMode");
 
-    const practiceDetails = document.getElementById("practiceDetails");
-    const piDigitsTextEl = document.getElementById("piDigitsText");
-    const copyPiBtn = document.getElementById("copyPiBtn");
-    const toggleGroupingBtn = document.getElementById("toggleGroupingBtn");
+  const worksheetArea = document.getElementById("worksheetArea");
+  const wsCountEl = document.getElementById("wsCount");
+  const genWorksheetBtn = document.getElementById("genWorksheet");
+  const wsList = document.getElementById("wsList");
 
-    let typed = "";
-    let playing = false;
-    let finished = false;
+  let isWorksheetMode = false;
+  let current = null;
+  let answered = false;
+  let score = {correct:0, total:0};
 
-    let lastMistake = null; // { expected: string, typed: string, index: number }
-    let groupedView = false;
+  function getSegments(graph){
+    const segs = [];
+    for(let i=0;i<graph.times.length-1;i++){
+      const t1 = graph.times[i], t2 = graph.times[i+1];
+      const d1 = graph.dist[i], d2 = graph.dist[i+1];
+      const dtH = (t2-t1)/60;
+      const dd = (d2-d1);
+      const speed = (dtH === 0) ? 0 : (dd/dtH); // km/h (can be negative)
+      segs.push({i, t1, t2, d1, d2, dd, dtH, speed});
+    }
+    return segs;
+  }
 
-    // Stores the index we want to highlight in the practice panel (last correct digit)
-    let highlightIndex = null;
+  // Single-mode generator (optionally allows return trips = downward segments)
+  function generateGraph(timeStyle, maxHours, allowReturnTrips){
+    const maxMins = maxHours * 60;
 
-    function isDecimalSeparator(ch){
-      return ch === "." || ch === ",";
+    let step = 60;
+    if(timeStyle !== "hoursOnly"){
+      step = (Math.random() < 0.40) ? 30 : 60;
     }
 
-    function normalizeExpected(exp){
-      if(exp === ".") return ".,";
-      return exp;
+    const segCount = randInt(3,5);
+
+    const times = [0];
+    let t = 0;
+    while(times.length < segCount + 1){
+      let add = step;
+      if(step === 30 && Math.random() < 0.22) add = 60;
+      if(t + add > maxMins) break;
+      t += add;
+      times.push(t);
+    }
+    while(times.length < 4){
+      if(t + step > maxMins) break;
+      t += step;
+      times.push(t);
     }
 
-    function digitsAfterDecimalCount(str){
-      const dot = str.indexOf(".");
-      const comma = str.indexOf(",");
-      let i = -1;
+    const dist = [0];
+    let d = 0;
 
-      if(dot !== -1) i = dot;
-      if(comma !== -1) i = (i === -1) ? comma : Math.min(i, comma);
+    let stopsLeft = randInt(0,2);
+    let hasMove = false;
+    let hasDown = false;
 
-      if(i === -1) return 0;
-      return Math.max(0, str.length - i - 1);
-    }
+    for(let i=1;i<times.length;i++){
+      const dt = (times[i]-times[i-1]) / 60;
+      let delta = 0;
 
-    function updateUI(){
-      typedSoFarEl.textContent = typed.length ? typed : "-";
-      liveScoreEl.textContent = String(digitsAfterDecimalCount(typed));
-    }
-
-    function setStatus(text, kind){
-      statusEl.textContent = text;
-      statusEl.className = "status" + (kind ? " " + kind : "");
-      statusEl.classList.remove("pop");
-      void statusEl.offsetWidth;
-      statusEl.classList.add("pop");
-    }
-
-    function clearMistake(){
-      lastMistake = null;
-      mistakeRow.style.display = "none";
-      mistakeInfoEl.textContent = "-";
-
-      shotMistakeTitle.style.display = "none";
-      shotMistakeEl.style.display = "none";
-      shotMistakeEl.textContent = "-";
-    }
-
-    function clearPracticeHighlight(){
-      highlightIndex = null;
-      const prev = piDigitsTextEl.querySelector(".piChar.stopMark");
-      if(prev) prev.classList.remove("stopMark");
-    }
-
-    function applyPracticeHighlight(scrollIfPossible){
-      // Remove any previous highlight
-      const prev = piDigitsTextEl.querySelector(".piChar.stopMark");
-      if(prev) prev.classList.remove("stopMark");
-
-      if(highlightIndex === null || highlightIndex < 0) return;
-
-      const target = piDigitsTextEl.querySelector('[data-i="' + highlightIndex + '"]');
-      if(!target) return;
-
-      target.classList.add("stopMark");
-
-      // Only scroll if the details pane is open (otherwise scrolling can be weird)
-      if(scrollIfPossible && practiceDetails.open){
-        try{
-          target.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
-        }catch(e){
-          // ignore
-        }
-      }
-    }
-
-    function setModeTextForRunning(){
-      if(inputModeSel.value === "enter"){
-        subtitleEl.textContent = "Type one character at a time, then press Enter. One mistake ends the run.";
-        setStatus("Go! Type the next character and press Enter.", "");
+      // stops
+      if(stopsLeft > 0 && Math.random() < 0.22){
+        delta = 0;
+        stopsLeft--;
       }else{
-        subtitleEl.textContent = "Type one character at a time (no Enter). One mistake ends the run.";
-        setStatus("Go! Type the next character.", "");
-      }
-    }
+        // choose movement up or down
+        const canGoDown = allowReturnTrips && d > 0; // can't go below 0
+        const downProb = canGoDown ? 0.22 : 0.0;
+        const goDown = Math.random() < downProb;
 
-    function resetGame(){
-      typed = "";
-      playing = true;
-      finished = false;
-      resultsEl.style.display = "none";
+        // speeds
+        const speedChoices = [30,40,50,60,70,80,90,100];
+        let speed = choice(speedChoices);
+        let magnitude = speed * dt;
 
-      clearMistake();
-      clearPracticeHighlight();
-      renderPiPractice(); // refresh practice panel to clear highlight in DOM
-
-      charInput.value = "";
-      charInput.disabled = false;
-      charInput.focus();
-
-      downloadBtn.disabled = true;
-      copyBtn.disabled = true;
-
-      updateUI();
-      setModeTextForRunning();
-    }
-
-    function endGame(message){
-      playing = false;
-      finished = true;
-      charInput.disabled = true;
-
-      const digitsCount = digitsAfterDecimalCount(typed);
-      const now = new Date();
-      const stamp = now.toLocaleString();
-
-      scoreCharsEl.textContent = String(typed.length);
-      scoreDigitsEl.textContent = String(digitsCount);
-      timeStampEl.textContent = stamp;
-
-      shotTimeEl.textContent = stamp;
-      shotScoreEl.textContent = String(digitsCount);
-      shotDigitsEl.textContent = typed.length ? typed : "-";
-
-      if(lastMistake){
-        const expDisp = normalizeExpected(lastMistake.expected);
-        const typedDisp = lastMistake.typed === "" ? "(blank)" : lastMistake.typed;
-        const msg = 'Typed "' + typedDisp + '" but expected "' + expDisp + '" (position ' + (lastMistake.index + 1) + ").";
-        mistakeInfoEl.textContent = msg;
-        mistakeRow.style.display = "block";
-
-        shotMistakeTitle.style.display = "block";
-        shotMistakeEl.style.display = "block";
-        shotMistakeEl.textContent = msg;
-      } else {
-        mistakeRow.style.display = "none";
-        shotMistakeTitle.style.display = "none";
-        shotMistakeEl.style.display = "none";
-      }
-
-      // Set highlight to last correct digit (typed.length - 1)
-      if(typed.length > 0){
-        highlightIndex = typed.length - 1;
-      }else{
-        highlightIndex = null;
-      }
-
-      // Re-render practice panel (so we have spans) and apply highlight
-      renderPiPractice();
-      applyPracticeHighlight(false);
-
-      resultsEl.style.display = "block";
-      downloadBtn.disabled = false;
-      copyBtn.disabled = false;
-
-      setStatus(message || "Game over. Download the result image and email it to your teacher.", "bad");
-    }
-
-    function recordMistake(expected, got, index){
-      lastMistake = { expected, typed: got, index };
-    }
-
-    function isAllowedChar(ch){
-      const isDigit = ch >= "0" && ch <= "9";
-      if(isDigit) return true;
-      if(isDecimalSeparator(ch)) return true;
-      return false;
-    }
-
-    function checkAndAppendChar(ch){
-      if(!playing || finished) return;
-
-      const exp = PI[typed.length] || "";
-      if(!exp){
-        endGame("Finished! You reached the end of the stored digits.");
-        return;
-      }
-
-      let ok = false;
-      if(exp === "."){
-        ok = isDecimalSeparator(ch);
-      } else {
-        ok = (ch === exp);
-      }
-
-      if(ok){
-        typed += ch;
-        updateUI();
-        setStatus("Correct!", "ok");
-
-        if(typed.length >= PI.length){
-          endGame("Finished! You reached the end of the stored digits.");
-        }
-      } else {
-        recordMistake(exp, ch, typed.length);
-        const expDisp = normalizeExpected(exp);
-        endGame('Wrong. The correct character was "' + expDisp + '".');
-      }
-    }
-
-    function handleSingleCharInput(ch){
-      if(!ch) return;
-      if(!isAllowedChar(ch)){
-        setStatus('Only digits 0-9 and "." or "," are allowed.', "bad");
-        return;
-      }
-      checkAndAppendChar(ch);
-    }
-
-    // Enter mode: press Enter to submit the single character
-    charInput.addEventListener("keydown", (e) => {
-      if(inputModeSel.value !== "enter") return;
-      if(e.key !== "Enter") return;
-
-      e.preventDefault();
-      const ch = charInput.value;
-      charInput.value = "";
-
-      if(!playing || finished) return;
-      handleSingleCharInput(ch);
-    });
-
-    // Instant mode: submit as soon as a single character is typed
-    charInput.addEventListener("input", () => {
-      if(inputModeSel.value !== "instant") return;
-      if(!playing || finished) return;
-
-      const ch = charInput.value;
-      const one = ch ? ch[0] : "";
-      charInput.value = "";
-
-      if(!one) return;
-      handleSingleCharInput(one);
-
-      if(!finished) charInput.focus();
-    });
-
-    inputModeSel.addEventListener("change", () => {
-      if(inputModeSel.value === "enter"){
-        subtitleEl.textContent = "Type one character at a time, then press Enter. One mistake ends the run.";
-        if(playing && !finished) setStatus("Enter mode: type the next character and press Enter.", "");
-      } else {
-        subtitleEl.textContent = "Type one character at a time (no Enter). One mistake ends the run.";
-        if(playing && !finished) setStatus("Instant mode: type the next character.", "");
-      }
-      if(playing && !finished && !charInput.disabled) charInput.focus();
-    });
-
-    startBtn.addEventListener("click", resetGame);
-
-    // If the practice panel is opened, scroll the highlight into view
-    practiceDetails.addEventListener("toggle", () => {
-      if(practiceDetails.open){
-        // small delay helps some browsers layout the open panel
-        setTimeout(() => applyPracticeHighlight(true), 50);
-      }
-    });
-
-    async function makeShotCanvas(){
-      await new Promise(r => setTimeout(r, 60));
-      return await html2canvas(shotTarget, {
-        backgroundColor: "#0b1020",
-        scale: 2
-      });
-    }
-
-    downloadBtn.addEventListener("click", async () => {
-      if(!finished) return;
-
-      downloadBtn.disabled = true;
-      try{
-        const canvas = await makeShotCanvas();
-        const dataUrl = canvas.toDataURL("image/png");
-
-        const a = document.createElement("a");
-        const safeScore = shotScoreEl.textContent || "0";
-        a.download = "pi-score-" + safeScore + ".png";
-        a.href = dataUrl;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      }catch(err){
-        alert("Screenshot download failed on this device/browser. Try another browser.");
-        console.error(err);
-      }finally{
-        downloadBtn.disabled = false;
-      }
-    });
-
-    copyBtn.addEventListener("click", async () => {
-      if(!finished) return;
-
-      copyBtn.disabled = true;
-      try{
-        const canvas = await makeShotCanvas();
-
-        if(!navigator.clipboard || !window.ClipboardItem){
-          alert("Copy image is not supported here. Use Download instead.");
-          return;
-        }
-
-        const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-        alert("Copied. Try pasting into Gmail.");
-      }catch(err){
-        alert("Copy did not work here. Use Download instead.");
-        console.error(err);
-      }finally{
-        copyBtn.disabled = false;
-      }
-    });
-
-    // --------- Practice digits rendering (with spans + optional grouping) ----------
-    function renderPiPractice(){
-      // Rebuild the entire practice display as DOM nodes so we can highlight by index.
-      piDigitsTextEl.innerHTML = "";
-
-      let idx = 0;
-
-      function addCharSpan(ch, i){
-        const span = document.createElement("span");
-        span.className = "piChar";
-        span.textContent = ch;
-        span.setAttribute("data-i", String(i));
-        piDigitsTextEl.appendChild(span);
-      }
-
-      function addText(t){
-        piDigitsTextEl.appendChild(document.createTextNode(t));
-      }
-
-      if(!groupedView){
-        for(let i=0;i<PI.length;i++){
-          addCharSpan(PI[i], i);
-        }
-      } else {
-        // Grouping format:
-        // - Keep "3." together
-        // - Then digits after decimal grouped in blocks of 5, spaces between blocks
-        // - 10 blocks per line
-
-        if(PI.length >= 2){
-          addCharSpan(PI[0], 0);
-          addCharSpan(PI[1], 1);
-          addText("\n");
-          idx = 2;
-        }
-
-        let blocksOnLine = 0;
-        let digitsInBlock = 0;
-
-        while(idx < PI.length){
-          addCharSpan(PI[idx], idx);
-          idx++;
-          digitsInBlock++;
-
-          if(digitsInBlock === 5){
-            digitsInBlock = 0;
-            blocksOnLine++;
-
-            if(idx < PI.length){
-              if(blocksOnLine === 10){
-                addText("\n");
-                blocksOnLine = 0;
-              } else {
-                addText(" ");
-              }
+        // keep mostly whole numbers
+        if(!approxEqual(magnitude, Math.round(magnitude))){
+          if(Math.random() < 0.15){
+            magnitude = round1(magnitude); // rare .5
+          }else{
+            if(dt === 0.5){
+              speed = choice([40,60,80,100]);
+              magnitude = speed * dt;
+            }else{
+              magnitude = Math.round(magnitude);
             }
           }
         }
-      }
 
-      // Apply highlight after render
-      applyPracticeHighlight(false);
-    }
-
-    function getPiPracticeText(){
-      // For copy button. Keep it simple: copy either raw PI or grouped text (no spans).
-      if(!groupedView) return PI;
-
-      // grouped plain text version
-      if(PI.length < 3) return PI;
-      const head = PI.slice(0,2); // "3."
-      const rest = PI.slice(2);
-
-      const blocks = [];
-      for(let i=0;i<rest.length;i+=5){
-        blocks.push(rest.slice(i, i+5));
-      }
-
-      const lines = [];
-      for(let i=0;i<blocks.length;i+=10){
-        lines.push(blocks.slice(i, i+10).join(" "));
-      }
-
-      return head + "\n" + lines.join("\n");
-    }
-
-    copyPiBtn.addEventListener("click", async () => {
-      try{
-        const txt = getPiPracticeText();
-        if(navigator.clipboard && navigator.clipboard.writeText){
-          await navigator.clipboard.writeText(txt);
-          setStatus("Copied pi digits.", "ok");
-        }else{
-          const ta = document.createElement("textarea");
-          ta.value = txt;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          ta.remove();
-          setStatus("Copied pi digits.", "ok");
+        if(approxEqual(magnitude, Math.round(magnitude))){
+          magnitude = Math.round(magnitude/10)*10; // snap
         }
-      }catch(e){
-        alert("Copy failed on this device/browser.");
-        console.error(e);
+
+        delta = goDown ? -magnitude : magnitude;
+
+        // keep within bounds (0..420)
+        if(d + delta > 420){
+          delta = 420 - d;
+          delta = Math.floor(delta/10)*10;
+        }
+        if(d + delta < 0){
+          delta = -d;
+          delta = -Math.floor(Math.abs(delta)/10)*10;
+        }
+
+        if(delta !== 0) hasMove = true;
+        if(delta < 0) hasDown = true;
       }
-    });
 
-    toggleGroupingBtn.addEventListener("click", () => {
-      groupedView = !groupedView;
-      renderPiPractice();
-      setStatus(groupedView ? "Grouped view on." : "Grouped view off.", "");
-    });
+      d = d + delta;
+      d = clamp(d, 0, 420);
+      dist.push(d);
+    }
 
-    (function init(){
-      // Default: Instant mode
-      inputModeSel.value = "instant";
-      subtitleEl.textContent = "Type one character at a time (no Enter). One mistake ends the run.";
+    if(!hasMove){
+      const last = dist.length-1;
+      dist[last] = clamp(dist[last-1] + 60, 0, 420);
+    }
 
-      charInput.disabled = true;
-      downloadBtn.disabled = true;
-      copyBtn.disabled = true;
+    // If return trips are allowed, try to ensure we sometimes get at least one down segment
+    // but don't force it every time.
+    if(allowReturnTrips && !hasDown && Math.random() < 0.55){
+      // create a return on the last segment if possible
+      const n = dist.length;
+      if(n >= 3 && dist[n-2] > 0){
+        const back = Math.min(dist[n-2], 60);
+        dist[n-1] = clamp(dist[n-2] - back, 0, 420);
+      }
+    }
 
-      updateUI();
-      renderPiPractice();
-      setStatus("Click Start to begin.", "");
-    })();
-  </script>
+    const maxDist = Math.max.apply(null, dist);
+    let yTop = 200;
+    if(maxDist <= 150) yTop = 200;
+    else if(maxDist <= 250) yTop = 300;
+    else if(maxDist <= 350) yTop = 400;
+    else yTop = 500;
+
+    const xTopMins = Math.max(times[times.length-1], 120);
+    const xTop = Math.ceil(xTopMins/60)*60;
+
+    return { times, dist, xTop, yTop };
+  }
+
+  function clearCanvas(){
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+  }
+
+  function drawGraph(graph, timeStyle){
+    clearCanvas();
+
+    const W = canvas.width, H = canvas.height;
+    const padL = 70, padR = 20, padT = 25, padB = 60;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    const panelCol = getComputedStyle(document.body).getPropertyValue("--panel").trim() || "#fff";
+    const borderCol = getComputedStyle(document.body).getPropertyValue("--border").trim() || "#d9d9d9";
+    const mutedCol = getComputedStyle(document.body).getPropertyValue("--muted").trim() || "#666";
+    const textCol  = getComputedStyle(document.body).getPropertyValue("--text").trim() || "#111";
+    const lineCol = "#b3261e";
+
+    ctx.fillStyle = panelCol;
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle = borderCol;
+    ctx.lineWidth = 1;
+
+    let xTick = 60;
+    if(timeStyle !== "hoursOnly" && graph.xTop <= 240 && Math.random() < 0.6) xTick = 30;
+    if(timeStyle === "minutesOnly") xTick = (graph.xTop <= 240 ? 30 : 60);
+
+    const yTick = (graph.yTop <= 300) ? 50 : 100;
+
+    for(let x=0; x<=graph.xTop; x+=xTick){
+      const px = padL + (x/graph.xTop)*plotW;
+      ctx.beginPath();
+      ctx.moveTo(px, padT);
+      ctx.lineTo(px, padT+plotH);
+      ctx.stroke();
+    }
+
+    for(let y=0; y<=graph.yTop; y+=yTick){
+      const py = padT + plotH - (y/graph.yTop)*plotH;
+      ctx.beginPath();
+      ctx.moveTo(padL, py);
+      ctx.lineTo(padL+plotW, py);
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = textCol;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT);
+    ctx.lineTo(padL, padT+plotH);
+    ctx.lineTo(padL+plotW, padT+plotH);
+    ctx.stroke();
+
+    ctx.fillStyle = textCol;
+    ctx.font = "700 14px system-ui, -apple-system, Segoe UI, Arial";
+    ctx.fillText("Distance (km)", 12, 18);
+    ctx.fillText("Time", padL + plotW - 40, padT + plotH + 48);
+
+    ctx.fillStyle = mutedCol;
+    ctx.font = "12px system-ui, -apple-system, Segoe UI, Arial";
+
+    for(let x=0; x<=graph.xTop; x+=xTick){
+      const px = padL + (x/graph.xTop)*plotW;
+      const label = formatTime(x, timeStyle);
+      ctx.textAlign = "center";
+      ctx.fillText(label, px, padT + plotH + 20);
+    }
+
+    for(let y=0; y<=graph.yTop; y+=yTick){
+      const py = padT + plotH - (y/graph.yTop)*plotH;
+      ctx.textAlign = "right";
+      ctx.fillText(String(y), padL - 8, py + 4);
+    }
+
+    function toX(t){ return padL + (t/graph.xTop)*plotW; }
+    function toY(d){ return padT + plotH - (d/graph.yTop)*plotH; }
+
+    ctx.strokeStyle = lineCol;
+    ctx.lineWidth = 6;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(toX(graph.times[0]), toY(graph.dist[0]));
+    for(let i=1;i<graph.times.length;i++){
+      ctx.lineTo(toX(graph.times[i]), toY(graph.dist[i]));
+    }
+    ctx.stroke();
+
+    ctx.fillStyle = lineCol;
+    for(let i=0;i<graph.times.length;i++){
+      ctx.beginPath();
+      ctx.arc(toX(graph.times[i]), toY(graph.dist[i]), 5, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  function totalDistanceTraveled(segs){
+    // sum of absolute changes
+    let sum = 0;
+    for(let i=0;i<segs.length;i++) sum += Math.abs(segs[i].dd);
+    return sum;
+  }
+
+  function maxDistanceInfo(graph){
+    let bestD = graph.dist[0];
+    let bestT = graph.times[0];
+    for(let i=1;i<graph.dist.length;i++){
+      if(graph.dist[i] > bestD){
+        bestD = graph.dist[i];
+        bestT = graph.times[i];
+      }
+    }
+    return {d:bestD, t:bestT};
+  }
+
+  function turningPointTime(segs){
+    // turning point occurs where dd changes sign (up then down, or down then up)
+    for(let i=1;i<segs.length;i++){
+      const a = segs[i-1].dd;
+      const b = segs[i].dd;
+      if(a > 0 && b < 0) return segs[i].t1; // time at start of the down segment
+      if(a < 0 && b > 0) return segs[i].t1;
+    }
+    return null;
+  }
+
+  function generateQuestion(graph, timeStyle, allowFreeInput){
+    const segs = getSegments(graph);
+    const moving = segs.filter(s => s.dd !== 0);
+    const movingUp = segs.filter(s => s.dd > 0);
+    const movingDown = segs.filter(s => s.dd < 0);
+    const stopped = segs.filter(s => s.dd === 0);
+
+    const types = [];
+
+    // Existing types (updated to use absolute slope for speed comparisons)
+    if(moving.length >= 1) types.push("fastestAbs");
+    if(moving.length >= 2) types.push("slowestAbs");
+    if(stopped.length >= 1) types.push("stopped");
+    types.push("totalDistanceEnd");
+    types.push("distanceBetween");
+    if(stopped.length >= 1) types.push("stopDuration");
+    if(moving.length >= 2) types.push("speedCompareTwoAbs");
+    types.push("distanceAtTime");
+
+    // NEW types if downward exists
+    if(movingDown.length >= 1) types.push("movingBack");
+    // NEW turning point + maximum distance if graph goes up and then down
+    const turnT = turningPointTime(segs);
+    if(turnT !== null) types.push("turnAround");
+    types.push("greatestDistance");
+    types.push("distanceFromStartEnd"); // same as end y-value but concept framed
+    if(movingDown.length >= 1) types.push("totalDistanceTraveled"); // displacement vs distance
+
+    const qType = choice(types);
+
+    const useFreeInput = allowFreeInput && (
+      qType === "totalDistanceEnd" ||
+      qType === "distanceBetween" ||
+      qType === "stopDuration" ||
+      qType === "distanceAtTime" ||
+      qType === "greatestDistance" ||
+      qType === "totalDistanceTraveled" ||
+      qType === "distanceFromStartEnd"
+    ) && (Math.random() < 0.40);
+
+    function intervalLabel(s){ return formatInterval(s.t1, s.t2, timeStyle); }
+
+    function buildMC(prompt, options, correctIndex, explanation){
+      return {type:"mc", prompt:prompt, options:options, correctIndex:correctIndex, answerText: options[correctIndex], explanation:explanation};
+    }
+    function buildInput(prompt, correctValue, unit, explanation){
+      return {type:"input", prompt:prompt, correctValue:correctValue, unit:unit, explanation:explanation};
+    }
+
+    if(qType === "fastestAbs"){
+      // fastest speed magnitude = steepest line either up or down
+      let best = moving[0];
+      for(let i=0;i<moving.length;i++){
+        if(Math.abs(moving[i].speed) > Math.abs(best.speed)) best = moving[i];
+      }
+      let optionsSegs = shuffle(segs.slice()).slice(0, Math.min(4, segs.length));
+      if(!optionsSegs.some(s => s.i === best.i)){
+        optionsSegs[0] = best;
+        optionsSegs = shuffle(optionsSegs);
+      }
+      const options = optionsSegs.map(intervalLabel);
+      const correctIndex = optionsSegs.findIndex(s => s.i === best.i);
+      return buildMC(
+        "Between which times was the person moving the fastest?",
+        options,
+        correctIndex,
+        "Fastest means the steepest line (largest slope magnitude), even if it slopes downward."
+      );
+    }
+
+    if(qType === "slowestAbs"){
+      // slowest while moving = smallest non-zero slope magnitude
+      let worst = moving[0];
+      for(let i=0;i<moving.length;i++){
+        if(Math.abs(moving[i].speed) < Math.abs(worst.speed)) worst = moving[i];
+      }
+      let optionsSegs = shuffle(moving.slice()).slice(0, Math.min(4, moving.length));
+      if(!optionsSegs.some(s => s.i === worst.i)){
+        optionsSegs[0] = worst;
+        optionsSegs = shuffle(optionsSegs);
+      }
+      const options = optionsSegs.map(intervalLabel);
+      const correctIndex = optionsSegs.findIndex(s => s.i === worst.i);
+      return buildMC(
+        "Between which times was the person moving the slowest (but still moving)?",
+        options,
+        correctIndex,
+        "Slowest while moving means the least steep line (smallest slope magnitude)."
+      );
+    }
+
+    if(qType === "stopped"){
+      const stopSeg = choice(stopped);
+      let optionsSegs = shuffle(segs.slice()).slice(0, Math.min(4, segs.length));
+      if(!optionsSegs.some(s => s.i === stopSeg.i)){
+        optionsSegs[0] = stopSeg;
+        optionsSegs = shuffle(optionsSegs);
+      }
+      const options = optionsSegs.map(intervalLabel);
+      const correctIndex = optionsSegs.findIndex(s => s.i === stopSeg.i);
+      return buildMC(
+        "Between which times was the person stopped (not moving)?",
+        options,
+        correctIndex,
+        "Stopped means a horizontal line: time increases but distance stays the same."
+      );
+    }
+
+    if(qType === "movingBack"){
+      const seg = choice(movingDown);
+      let optionsSegs = shuffle(segs.slice()).slice(0, Math.min(4, segs.length));
+      if(!optionsSegs.some(s => s.i === seg.i)){
+        optionsSegs[0] = seg;
+        optionsSegs = shuffle(optionsSegs);
+      }
+      const options = optionsSegs.map(intervalLabel);
+      const correctIndex = optionsSegs.findIndex(s => s.i === seg.i);
+      return buildMC(
+        "Between which times was the person moving back toward the start?",
+        options,
+        correctIndex,
+        "A downward sloping line means distance is decreasing while time increases: returning toward the start."
+      );
+    }
+
+    if(qType === "turnAround"){
+      const tTurn = turningPointTime(segs);
+      const prompt = "At what time did the person turn around (change direction)?";
+      const expl = "Turning around is where the graph changes from going up to going down (or down to up).";
+
+      // Make MC with time options
+      const opts = new Set();
+      opts.add(tTurn);
+      while(opts.size < 4){
+        const t = choice(graph.times.slice(1)); // pick existing times
+        opts.add(t);
+      }
+      const options = shuffle(Array.from(opts)).map(t => formatTime(t, timeStyle));
+      const correctIndex = options.findIndex(s => s === formatTime(tTurn, timeStyle));
+      return buildMC(prompt, options, correctIndex, expl);
+    }
+
+    if(qType === "greatestDistance"){
+      const info = maxDistanceInfo(graph);
+      const prompt = "What is the greatest distance from the start on this graph? (km)";
+      const expl = "The greatest distance is the highest y-value reached on the graph.";
+
+      if(useFreeInput){
+        return buildInput(prompt, info.d, "km", expl);
+      }else{
+        const opts = new Set();
+        opts.add(info.d);
+        while(opts.size < 4){
+          let v = info.d + choice([-80,-60,-40,-20,20,40,60,80]);
+          v = Math.max(0, v);
+          v = Math.round(v/10)*10;
+          opts.add(v);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " km");
+        const correctIndex = options.findIndex(s => s === (info.d + " km"));
+        return buildMC(prompt, options, correctIndex, expl);
+      }
+    }
+
+    if(qType === "distanceFromStartEnd"){
+      const endD = graph.dist[graph.dist.length-1];
+      const prompt = "How far from the start is the person at the end of the graph? (km)";
+      const expl = "This is the final y-value (distance) at the last time point.";
+
+      if(useFreeInput){
+        return buildInput(prompt, endD, "km", expl);
+      }else{
+        const opts = new Set();
+        opts.add(endD);
+        while(opts.size < 4){
+          let v = endD + choice([-80,-60,-40,-20,20,40,60,80]);
+          v = Math.max(0, v);
+          v = Math.round(v/10)*10;
+          opts.add(v);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " km");
+        const correctIndex = options.findIndex(s => s === (endD + " km"));
+        return buildMC(prompt, options, correctIndex, expl);
+      }
+    }
+
+    if(qType === "totalDistanceTraveled"){
+      const total = totalDistanceTraveled(segs);
+      const prompt = "What total distance did the person travel in all? (km)";
+      const expl = "Total distance traveled adds up all movement, even when returning (sum of up and down distances).";
+
+      if(useFreeInput){
+        return buildInput(prompt, total, "km", expl);
+      }else{
+        const opts = new Set();
+        opts.add(total);
+        while(opts.size < 4){
+          let v = total + choice([-80,-60,-40,-20,20,40,60,80]);
+          v = Math.max(0, v);
+          v = Math.round(v/10)*10;
+          opts.add(v);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " km");
+        const correctIndex = options.findIndex(s => s === (total + " km"));
+        return buildMC(prompt, options, correctIndex, expl);
+      }
+    }
+
+    if(qType === "totalDistanceEnd"){
+      const total = graph.dist[graph.dist.length-1];
+      const prompt = "What distance is shown at the end of the graph? (km)";
+      const expl = "Read the final y-value at the last time point.";
+
+      if(useFreeInput){
+        return buildInput(prompt, total, "km", expl);
+      }else{
+        const opts = new Set();
+        opts.add(total);
+        while(opts.size < 4){
+          let d = total + choice([-80,-60,-40,-20,20,40,60,80]);
+          d = Math.max(0, d);
+          d = Math.round(d/10)*10;
+          opts.add(d);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " km");
+        const correctIndex = options.findIndex(s => s === (total + " km"));
+        return buildMC(prompt, options, correctIndex, expl);
+      }
+    }
+
+    if(qType === "distanceBetween"){
+      const seg = choice(segs);
+      const change = Math.abs(seg.dd); // distance traveled during that interval (regardless of direction)
+      const prompt = "How many kilometers did the person travel from " + formatTime(seg.t1, timeStyle) +
+        " to " + formatTime(seg.t2, timeStyle) + "?";
+      const expl = "Travel distance on an interval is the amount of change (absolute change in distance).";
+
+      if(useFreeInput){
+        return buildInput(prompt, change, "km", expl);
+      }else{
+        const opts = new Set();
+        opts.add(change);
+        while(opts.size < 4){
+          let d = change + choice([-60,-40,-20,20,40,60]);
+          d = Math.max(0, d);
+          d = Math.round(d/10)*10;
+          opts.add(d);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " km");
+        const correctIndex = options.findIndex(s => s === (change + " km"));
+        return buildMC(prompt, options, correctIndex, expl);
+      }
+    }
+
+    if(qType === "stopDuration" && stopped.length){
+      const seg = choice(stopped);
+      const mins = seg.t2 - seg.t1;
+      const prompt = "For how long was the person stopped between " + formatTime(seg.t1, timeStyle) +
+        " and " + formatTime(seg.t2, timeStyle) + "? (minutes)";
+      const expl = "When the line is horizontal, the person is stopped. Duration is the time difference.";
+
+      if(useFreeInput){
+        return buildInput(prompt, mins, "min", expl);
+      }else{
+        const opts = new Set();
+        opts.add(mins);
+        while(opts.size < 4){
+          let v = mins + choice([-60,-30,-15,15,30,60]);
+          v = clamp(v, 0, 240);
+          v = Math.round(v/15)*15;
+          opts.add(v);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " min");
+        const correctIndex = options.findIndex(s => s === (mins + " min"));
+        return buildMC(prompt, options, correctIndex, expl);
+      }
+    }
+
+    if(qType === "speedCompareTwoAbs" && moving.length >= 2){
+      const a = choice(moving);
+      let b = choice(moving);
+      let tries = 0;
+      while(b.i === a.i && tries < 10){ b = choice(moving); tries++; }
+
+      const options = [ formatInterval(a.t1,a.t2,timeStyle), formatInterval(b.t1,b.t2,timeStyle), "They are the same speed" ];
+      let correctIndex = 2;
+      if(Math.abs(a.speed) > Math.abs(b.speed)) correctIndex = 0;
+      else if(Math.abs(b.speed) > Math.abs(a.speed)) correctIndex = 1;
+
+      return buildMC(
+        "Which interval shows the faster speed?",
+        options,
+        correctIndex,
+        "Faster speed means a steeper line (greater slope magnitude), up or down."
+      );
+    }
+
+    if(qType === "distanceAtTime"){
+      const idx = randInt(1, graph.times.length-1);
+      const t = graph.times[idx];
+      const d = graph.dist[idx];
+      const prompt = "What is the distance at time " + formatTime(t, timeStyle) + "? (km)";
+      const expl = "Read the y-value (distance) at that time on the graph.";
+
+      if(useFreeInput){
+        return buildInput(prompt, d, "km", expl);
+      }else{
+        const opts = new Set();
+        opts.add(d);
+        while(opts.size < 4){
+          let v = d + choice([-80,-60,-40,-20,20,40,60,80]);
+          v = Math.max(0, v);
+          v = Math.round(v/10)*10;
+          opts.add(v);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " km");
+        const correctIndex = options.findIndex(s => s === (d + " km"));
+        return buildMC(prompt, options, correctIndex, expl);
+      }
+    }
+
+    // fallback
+    const segs2 = segs.slice(0,4);
+    return {
+      type:"mc",
+      prompt:"Between which times was the person stopped (not moving)?",
+      options: segs2.map(s=>formatInterval(s.t1,s.t2,timeStyle)),
+      correctIndex: 0,
+      answerText: segs2[0] ? formatInterval(segs2[0].t1,segs2[0].t2,timeStyle) : "",
+      explanation:"Stopped means a horizontal line."
+    };
+  }
+
+  function setFeedback(kind, title, text){
+    feedbackBox.style.display = "block";
+    feedbackBox.className = "feedback " + (kind === "good" ? "good" : "bad");
+    feedbackBox.innerHTML =
+      '<div class="big">' + title + '</div>' +
+      '<div style="color:var(--muted);font-size:13px;line-height:1.35;">' + text + '</div>';
+  }
+  function clearFeedback(){
+    feedbackBox.style.display = "none";
+    feedbackBox.innerHTML = "";
+    feedbackBox.className = "feedback";
+  }
+  function updateScoreBox(){
+    scoreBox.textContent = "Score: " + score.correct + " correct out of " + score.total;
+  }
+
+  function renderQuestion(q){
+    questionTextEl.textContent = q.prompt;
+    answered = false;
+    clearFeedback();
+    nextBtn.disabled = true;
+
+    answerArea.innerHTML = "";
+    checkBtn.disabled = false;
+
+    if(q.type === "mc"){
+      const div = document.createElement("div");
+      div.className = "choices";
+      for(let i=0;i<q.options.length;i++){
+        const opt = q.options[i];
+        const b = document.createElement("button");
+        b.className = "choiceBtn";
+        b.type = "button";
+        b.textContent = opt;
+        b.addEventListener("click", function(){
+          if(answered) return;
+          const btns = div.querySelectorAll(".choiceBtn");
+          for(let k=0;k<btns.length;k++){
+            btns[k].dataset.selected = "0";
+            btns[k].style.borderColor = "";
+          }
+          b.dataset.selected = "1";
+          b.style.borderColor = "var(--accent)";
+        });
+        div.appendChild(b);
+      }
+      answerArea.appendChild(div);
+    }else{
+      const row = document.createElement("div");
+      row.className = "row";
+      row.style.marginTop = "10px";
+      row.style.alignItems = "center";
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.id = "freeInput";
+      input.placeholder = "Type your answer";
+      input.autocomplete = "off";
+      input.inputMode = "decimal";
+      input.style.maxWidth = "220px";
+
+      const unit = document.createElement("div");
+      unit.className = "hint";
+      unit.style.fontWeight = "700";
+      unit.textContent = q.unit;
+
+      row.appendChild(input);
+      row.appendChild(unit);
+      answerArea.appendChild(row);
+
+      input.addEventListener("keydown", function(e){
+        if(e.key === "Enter"){
+          if(!checkBtn.disabled) checkBtn.click();
+          else if(!nextBtn.disabled) nextBtn.click();
+        }
+      });
+    }
+  }
+
+  function getSelectedMCIndex(){
+    const btns = answerArea.querySelectorAll(".choiceBtn");
+    for(let i=0;i<btns.length;i++){
+      if(btns[i].dataset.selected === "1") return i;
+    }
+    return -1;
+  }
+
+  function checkAnswer(){
+    if(!current || answered) return;
+    const q = current.question;
+
+    if(q.type === "mc"){
+      const idx = getSelectedMCIndex();
+      if(idx === -1){
+        setFeedback("bad", "Pick an answer first.", "Choose one option, then press Check.");
+        return;
+      }
+      answered = true;
+      score.total += 1;
+
+      const btns = answerArea.querySelectorAll(".choiceBtn");
+      for(let i=0;i<btns.length;i++){
+        btns[i].disabled = true;
+        if(i === q.correctIndex) btns[i].classList.add("correct");
+        if(i === idx && i !== q.correctIndex) btns[i].classList.add("wrong");
+      }
+
+      if(idx === q.correctIndex){
+        score.correct += 1;
+        setFeedback("good", "Correct!", q.explanation);
+      }else{
+        setFeedback("bad", "Not quite.", "Correct answer: " + q.answerText + ". " + q.explanation);
+      }
+
+      updateScoreBox();
+      checkBtn.disabled = true;
+      nextBtn.disabled = false;
+      return;
+    }
+
+    const input = document.getElementById("freeInput");
+    const raw = (input ? input.value : "").trim().replace(",", ".");
+    if(raw.length === 0){
+      setFeedback("bad", "Type an answer first.", "Then press Check.");
+      return;
+    }
+
+    const numMatch = raw.match(/-?\d+(\.\d+)?/);
+    if(!numMatch){
+      setFeedback("bad", "That does not look like a number.", "Try again.");
+      return;
+    }
+
+    const val = Number(numMatch[0]);
+    if(Number.isNaN(val)){
+      setFeedback("bad", "That does not look like a number.", "Try again.");
+      return;
+    }
+
+    answered = true;
+    score.total += 1;
+
+    const correct = Number(q.correctValue);
+    const ok = Math.abs(val - correct) < 0.05;
+
+    input.disabled = true;
+
+    if(ok){
+      score.correct += 1;
+      setFeedback("good", "Correct!", q.explanation);
+    }else{
+      setFeedback("bad", "Not quite.", "Correct answer: " + correct + " " + q.unit + ". " + q.explanation);
+    }
+
+    updateScoreBox();
+    checkBtn.disabled = true;
+    nextBtn.disabled = false;
+  }
+
+  function buildNew(){
+    const timeStyle = timeStyleEl.value;
+    const maxHours = Number(maxTimeEl.value);
+    const allowFreeInput = allowFreeInputEl.checked;
+    const allowReturnTrips = allowReturnTripsEl.checked;
+
+    const graph = generateGraph(timeStyle, maxHours, allowReturnTrips);
+    const question = generateQuestion(graph, timeStyle, allowFreeInput);
+
+    current = {graph:graph, question:question};
+
+    drawGraph(graph, timeStyle);
+    renderQuestion(question);
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function getAnswerKeyLine(q){
+    if(q.type === "mc"){
+      const letters = ["A","B","C","D","E"];
+      const letter = letters[q.correctIndex] || "A";
+      return letter + " (" + q.answerText + ")";
+    }
+    return q.correctValue + " " + q.unit;
+  }
+
+  function generateWorksheet(){
+    const timeStyle = timeStyleEl.value;
+    const maxHours = Number(maxTimeEl.value);
+    const allowFreeInput = allowFreeInputEl.checked;
+    const allowReturnTrips = allowReturnTripsEl.checked;
+
+    const n = clamp(Number(wsCountEl.value || 10), 5, 30);
+    wsList.innerHTML = "";
+
+    const saved = current ? JSON.parse(JSON.stringify({
+      graph: current.graph,
+      question: current.question
+    })) : null;
+
+    for(let i=1;i<=n;i++){
+      const graph = generateGraph(timeStyle, maxHours, allowReturnTrips);
+      const q = generateQuestion(graph, timeStyle, allowFreeInput);
+
+      // For printing: prefer MC most of the time
+      let qPrint = q;
+      if(q.type === "input" && Math.random() < 0.6){
+        const correct = q.correctValue;
+        const unit = q.unit;
+        const opts = new Set();
+        opts.add(correct);
+
+        while(opts.size < 4){
+          let v = correct + choice([-80,-60,-40,-20,20,40,60,80]);
+          v = Math.max(0, v);
+          v = Math.round(v/10)*10;
+          opts.add(v);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " " + unit);
+        const correctIndex = options.findIndex(s => s === (correct + " " + unit));
+        qPrint = {
+          type:"mc",
+          prompt:q.prompt,
+          options:options,
+          correctIndex:correctIndex,
+          answerText: options[correctIndex],
+          explanation:q.explanation
+        };
+      }
+
+      drawGraph(graph, timeStyle);
+      const img = canvas.toDataURL("image/png");
+
+      const card = document.createElement("div");
+      card.className = "wsCard";
+      card.innerHTML =
+        '<h3>Problem ' + i + '</h3>' +
+        '<img alt="Graph for problem ' + i + '" src="' + img + '" />' +
+        '<p class="wsQ">' + escapeHtml(qPrint.prompt) + '</p>' +
+        (qPrint.type === "mc" ? (
+          '<div class="wsQ" style="margin-top:6px;color:var(--muted);">' +
+          'A) ' + escapeHtml(qPrint.options[0]) + '<br/>' +
+          'B) ' + escapeHtml(qPrint.options[1]) + '<br/>' +
+          'C) ' + escapeHtml(qPrint.options[2]) + '<br/>' +
+          'D) ' + escapeHtml(qPrint.options[3] || qPrint.options[2]) +
+          '</div>'
+        ) : '') +
+        '<div class="wsAns"><b>Answer key:</b> ' + escapeHtml(getAnswerKeyLine(qPrint)) + '</div>';
+
+      wsList.appendChild(card);
+    }
+
+    if(saved){
+      current = saved;
+      drawGraph(current.graph, timeStyleEl.value);
+      renderQuestion(current.question);
+    }else{
+      clearCanvas();
+      questionTextEl.textContent = "Press New Question to start.";
+      answerArea.innerHTML = "";
+      checkBtn.disabled = true;
+      nextBtn.disabled = true;
+      clearFeedback();
+    }
+  }
+
+  function setModeWorksheet(on){
+    isWorksheetMode = on;
+    worksheetArea.classList.toggle("active", on);
+    const gameOnlyEls = document.querySelectorAll(".gameOnly");
+    for(let i=0;i<gameOnlyEls.length;i++){
+      gameOnlyEls[i].style.display = on ? "none" : "block";
+    }
+    toggleModeBtn.textContent = "Mode: " + (on ? "Worksheet" : "Game");
+  }
+
+  function setContrast(on){
+    document.body.classList.toggle("high-contrast", on);
+    toggleContrastBtn.textContent = "High Contrast: " + (on ? "On" : "Off");
+    if(current && !isWorksheetMode){
+      drawGraph(current.graph, timeStyleEl.value);
+    }
+  }
+
+  newQuestionBtn.addEventListener("click", function(){
+    setModeWorksheet(false);
+    buildNew();
+  });
+
+  resetScoreBtn.addEventListener("click", function(){
+    score.correct = 0;
+    score.total = 0;
+    updateScoreBox();
+    clearFeedback();
+    answered = false;
+    nextBtn.disabled = true;
+    checkBtn.disabled = current ? false : true;
+  });
+
+  checkBtn.addEventListener("click", checkAnswer);
+
+  nextBtn.addEventListener("click", function(){
+    if(nextBtn.disabled) return;
+    buildNew();
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(isWorksheetMode) return;
+    if(e.key === "Enter"){
+      if(!nextBtn.disabled) nextBtn.click();
+      else if(!checkBtn.disabled) checkBtn.click();
+    }
+  });
+
+  timeStyleEl.addEventListener("change", function(){
+    if(current && !isWorksheetMode){
+      drawGraph(current.graph, timeStyleEl.value);
+    }
+  });
+
+  toggleContrastBtn.addEventListener("click", function(){
+    setContrast(!document.body.classList.contains("high-contrast"));
+  });
+
+  toggleModeBtn.addEventListener("click", function(){
+    setModeWorksheet(!isWorksheetMode);
+  });
+
+  genWorksheetBtn.addEventListener("click", function(){
+    setModeWorksheet(true);
+    generateWorksheet();
+  });
+
+  updateScoreBox();
+  setContrast(false);
+  setModeWorksheet(false);
+
+})();
+</script>
 </body>
 </html>
