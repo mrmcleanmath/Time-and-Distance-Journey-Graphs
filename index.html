@@ -12,7 +12,6 @@
     --muted:#5e5e5e;
     --border:#d9d9d9;
     --accent:#2b7cff;
-    --accentSoft:#e7f0ff;
     --good:#1d7a2a;
     --bad:#b3261e;
     --shadow:0 8px 22px rgba(0,0,0,0.10);
@@ -32,7 +31,6 @@
     --muted:#cfcfcf;
     --border:#3a3a3a;
     --accent:#7fb2ff;
-    --accentSoft:#0f1a2a;
     --shadow:none;
   }
   .wrap{
@@ -145,9 +143,7 @@
     background:linear-gradient(180deg, rgba(255,255,255,0.0), rgba(0,0,0,0.02));
     padding:10px;
   }
-  body.high-contrast .canvasWrap{
-    background:transparent;
-  }
+  body.high-contrast .canvasWrap{ background:transparent; }
   canvas{
     width:100%;
     height:auto;
@@ -209,10 +205,7 @@
   }
 
   /* Worksheet */
-  .worksheetArea{
-    display:none;
-    margin-top:14px;
-  }
+  .worksheetArea{ display:none; margin-top:14px; }
   .worksheetArea.active{ display:block; }
   .wsHeader{
     display:flex;
@@ -236,10 +229,7 @@
     padding:10px;
     background:var(--panel);
   }
-  .wsCard h3{
-    margin:0 0 8px 0;
-    font-size:14px;
-  }
+  .wsCard h3{ margin:0 0 8px 0; font-size:14px; }
   .wsCard img{
     width:100%;
     border:1px solid var(--border);
@@ -247,11 +237,7 @@
     display:block;
     margin-bottom:8px;
   }
-  .wsQ{
-    margin:0;
-    font-size:13px;
-    line-height:1.35;
-  }
+  .wsQ{ margin:0; font-size:13px; line-height:1.35; }
   .wsAns{
     margin-top:8px;
     border-top:1px dashed var(--border);
@@ -274,7 +260,7 @@
   <header>
     <div class="title">
       <h1>Time and Distance: Journey Graphs</h1>
-      <p class="subtitle">Interpret distance-time graphs: steeper means faster, flat means stopped.</p>
+      <p class="subtitle">Steeper = faster. Flat = stopped. Downward = moving back toward the start.</p>
     </div>
     <div class="row">
       <button class="btn" id="toggleContrast">High Contrast: Off</button>
@@ -313,6 +299,17 @@
           </div>
           <div class="hint">If this is off, everything stays multiple choice.</div>
         </div>
+
+        <div class="control" style="grid-column:1 / -1;">
+          <label>Graph features</label>
+          <div class="row" style="gap:10px;">
+            <label style="display:flex;gap:8px;align-items:center;">
+              <input type="checkbox" id="allowReturnTrips" checked />
+              <span style="font-size:13px;color:var(--text);">Allow return trips (downward lines)</span>
+            </label>
+          </div>
+          <div class="hint">Downward slope means moving back toward the start, not back in time.</div>
+        </div>
       </div>
 
       <div class="row" style="margin-top:10px;">
@@ -321,10 +318,11 @@
       </div>
 
       <p class="hint" style="margin:10px 0 0 0;">
-        What students should notice:
-        steeper line = faster speed,
-        less steep line = slower speed,
-        horizontal line = stopped (time moves, distance does not).
+        Key ideas:
+        time always increases (x-axis),
+        distance increases when moving away,
+        distance decreases when returning,
+        flat means stopped.
       </p>
     </div>
 
@@ -386,19 +384,14 @@
   function approxEqual(a,b,eps){ return Math.abs(a-b) < (eps || 1e-9); }
 
   function formatTime(mins, style){
-    if(style === "minutesOnly"){
-      return mins + " min";
-    }
+    if(style === "minutesOnly") return mins + " min";
     const h = Math.floor(mins/60);
     const m = mins%60;
-    if(style === "hoursOnly"){
-      return h + " h";
-    }
+    if(style === "hoursOnly") return h + " h";
     if(m === 0) return h + " h";
     const mm = (m<10 ? ("0"+m) : (""+m));
     return h + ":" + mm;
   }
-
   function formatInterval(t1, t2, style){
     return formatTime(t1, style) + " to " + formatTime(t2, style);
   }
@@ -408,6 +401,7 @@
 
   const timeStyleEl = document.getElementById("timeStyle");
   const allowFreeInputEl = document.getElementById("allowFreeInput");
+  const allowReturnTripsEl = document.getElementById("allowReturnTrips");
   const maxTimeEl = document.getElementById("maxTime");
 
   const newQuestionBtn = document.getElementById("newQuestion");
@@ -440,24 +434,21 @@
       const d1 = graph.dist[i], d2 = graph.dist[i+1];
       const dtH = (t2-t1)/60;
       const dd = (d2-d1);
-      const speed = (dtH === 0) ? 0 : dd/dtH;
+      const speed = (dtH === 0) ? 0 : (dd/dtH); // km/h (can be negative)
       segs.push({i, t1, t2, d1, d2, dd, dtH, speed});
     }
     return segs;
   }
 
-  // Single-mode generator (replaces easy/medium/hard)
-  function generateGraph(timeStyle, maxHours){
+  // Single-mode generator (optionally allows return trips = downward segments)
+  function generateGraph(timeStyle, maxHours, allowReturnTrips){
     const maxMins = maxHours * 60;
 
-    // Mostly hours, sometimes half-hours
     let step = 60;
     if(timeStyle !== "hoursOnly"){
-      const wantHalfHours = (Math.random() < 0.40);
-      step = wantHalfHours ? 30 : 60;
+      step = (Math.random() < 0.40) ? 30 : 60;
     }
 
-    // 3 to 5 segments
     const segCount = randInt(3,5);
 
     const times = [0];
@@ -469,77 +460,91 @@
       t += add;
       times.push(t);
     }
-
     while(times.length < 4){
       if(t + step > maxMins) break;
       t += step;
       times.push(t);
     }
 
-    // Distances: clean, student-friendly
     const dist = [0];
     let d = 0;
 
-    // 0 to 2 stop segments
     let stopsLeft = randInt(0,2);
     let hasMove = false;
+    let hasDown = false;
 
     for(let i=1;i<times.length;i++){
       const dt = (times[i]-times[i-1]) / 60;
       let delta = 0;
 
-      let doStop = false;
-      if(stopsLeft > 0 && Math.random() < 0.25) doStop = true;
-
-      if(doStop){
+      // stops
+      if(stopsLeft > 0 && Math.random() < 0.22){
         delta = 0;
         stopsLeft--;
       }else{
-        // speeds that keep values reasonable
-        let speedChoices = [30, 40, 50, 60, 70, 80, 90, 100];
-        let speed = choice(speedChoices);
-        delta = speed * dt;
+        // choose movement up or down
+        const canGoDown = allowReturnTrips && d > 0; // can't go below 0
+        const downProb = canGoDown ? 0.22 : 0.0;
+        const goDown = Math.random() < downProb;
 
-        // Keep mostly whole numbers
-        if(!approxEqual(delta, Math.round(delta))){
-          if(Math.random() < 0.18){
-            delta = round1(delta); // rare .5
+        // speeds
+        const speedChoices = [30,40,50,60,70,80,90,100];
+        let speed = choice(speedChoices);
+        let magnitude = speed * dt;
+
+        // keep mostly whole numbers
+        if(!approxEqual(magnitude, Math.round(magnitude))){
+          if(Math.random() < 0.15){
+            magnitude = round1(magnitude); // rare .5
           }else{
             if(dt === 0.5){
-              speed = choice([40, 60, 80, 100]);
-              delta = speed * dt;
+              speed = choice([40,60,80,100]);
+              magnitude = speed * dt;
             }else{
-              delta = Math.round(delta);
+              magnitude = Math.round(magnitude);
             }
           }
         }
 
-        // Keep totals from getting huge
+        if(approxEqual(magnitude, Math.round(magnitude))){
+          magnitude = Math.round(magnitude/10)*10; // snap
+        }
+
+        delta = goDown ? -magnitude : magnitude;
+
+        // keep within bounds (0..420)
         if(d + delta > 420){
-          delta = clamp(delta, 0, 420 - d);
+          delta = 420 - d;
           delta = Math.floor(delta/10)*10;
-          if(delta < 10){ delta = 0; stopsLeft = Math.max(stopsLeft-1,0); }
+        }
+        if(d + delta < 0){
+          delta = -d;
+          delta = -Math.floor(Math.abs(delta)/10)*10;
         }
 
-        // Snap to 10 km most of the time
-        if(approxEqual(delta, Math.round(delta))){
-          delta = Math.round(delta/10)*10;
-        }
-
-        if(delta > 0) hasMove = true;
+        if(delta !== 0) hasMove = true;
+        if(delta < 0) hasDown = true;
       }
 
       d = d + delta;
+      d = clamp(d, 0, 420);
       dist.push(d);
     }
 
     if(!hasMove){
       const last = dist.length-1;
-      dist[last] = dist[last-1] + 60;
+      dist[last] = clamp(dist[last-1] + 60, 0, 420);
     }
 
-    for(let i=1;i<dist.length;i++){
-      if(dist[i] < dist[i-1]) dist[i] = dist[i-1];
+    // If return trips are allowed, try to ensure we sometimes get at least one down segment
+    // but don't force it every time.
+    if(allowReturnTrips && !hasDown && Math.random() < 0.55){
+      // create a return on the last segment if possible
+      const n = dist.length;
+      if(n >= 3 && dist[n-2] > 0){
+        const back = Math.min(dist[n-2], 60);
+        dist[n-1] = clamp(dist[n-2] - back, 0, 420);
+      }
     }
 
     const maxDist = Math.max.apply(null, dist);
@@ -652,25 +657,74 @@
     }
   }
 
+  function totalDistanceTraveled(segs){
+    // sum of absolute changes
+    let sum = 0;
+    for(let i=0;i<segs.length;i++) sum += Math.abs(segs[i].dd);
+    return sum;
+  }
+
+  function maxDistanceInfo(graph){
+    let bestD = graph.dist[0];
+    let bestT = graph.times[0];
+    for(let i=1;i<graph.dist.length;i++){
+      if(graph.dist[i] > bestD){
+        bestD = graph.dist[i];
+        bestT = graph.times[i];
+      }
+    }
+    return {d:bestD, t:bestT};
+  }
+
+  function turningPointTime(segs){
+    // turning point occurs where dd changes sign (up then down, or down then up)
+    for(let i=1;i<segs.length;i++){
+      const a = segs[i-1].dd;
+      const b = segs[i].dd;
+      if(a > 0 && b < 0) return segs[i].t1; // time at start of the down segment
+      if(a < 0 && b > 0) return segs[i].t1;
+    }
+    return null;
+  }
+
   function generateQuestion(graph, timeStyle, allowFreeInput){
     const segs = getSegments(graph);
-    const moving = segs.filter(s => s.dd > 0 && s.speed > 0);
+    const moving = segs.filter(s => s.dd !== 0);
+    const movingUp = segs.filter(s => s.dd > 0);
+    const movingDown = segs.filter(s => s.dd < 0);
     const stopped = segs.filter(s => s.dd === 0);
 
     const types = [];
-    if(moving.length >= 1) types.push("fastest");
-    if(moving.length >= 2) types.push("slowestMoving");
+
+    // Existing types (updated to use absolute slope for speed comparisons)
+    if(moving.length >= 1) types.push("fastestAbs");
+    if(moving.length >= 2) types.push("slowestAbs");
     if(stopped.length >= 1) types.push("stopped");
-    types.push("totalDistance");
+    types.push("totalDistanceEnd");
     types.push("distanceBetween");
     if(stopped.length >= 1) types.push("stopDuration");
-    if(moving.length >= 2) types.push("speedCompareTwo");
+    if(moving.length >= 2) types.push("speedCompareTwoAbs");
     types.push("distanceAtTime");
+
+    // NEW types if downward exists
+    if(movingDown.length >= 1) types.push("movingBack");
+    // NEW turning point + maximum distance if graph goes up and then down
+    const turnT = turningPointTime(segs);
+    if(turnT !== null) types.push("turnAround");
+    types.push("greatestDistance");
+    types.push("distanceFromStartEnd"); // same as end y-value but concept framed
+    if(movingDown.length >= 1) types.push("totalDistanceTraveled"); // displacement vs distance
 
     const qType = choice(types);
 
     const useFreeInput = allowFreeInput && (
-      qType === "totalDistance" || qType === "distanceBetween" || qType === "stopDuration" || qType === "distanceAtTime"
+      qType === "totalDistanceEnd" ||
+      qType === "distanceBetween" ||
+      qType === "stopDuration" ||
+      qType === "distanceAtTime" ||
+      qType === "greatestDistance" ||
+      qType === "totalDistanceTraveled" ||
+      qType === "distanceFromStartEnd"
     ) && (Math.random() < 0.40);
 
     function intervalLabel(s){ return formatInterval(s.t1, s.t2, timeStyle); }
@@ -682,10 +736,11 @@
       return {type:"input", prompt:prompt, correctValue:correctValue, unit:unit, explanation:explanation};
     }
 
-    if(qType === "fastest"){
+    if(qType === "fastestAbs"){
+      // fastest speed magnitude = steepest line either up or down
       let best = moving[0];
       for(let i=0;i<moving.length;i++){
-        if(moving[i].speed > best.speed) best = moving[i];
+        if(Math.abs(moving[i].speed) > Math.abs(best.speed)) best = moving[i];
       }
       let optionsSegs = shuffle(segs.slice()).slice(0, Math.min(4, segs.length));
       if(!optionsSegs.some(s => s.i === best.i)){
@@ -695,22 +750,20 @@
       const options = optionsSegs.map(intervalLabel);
       const correctIndex = optionsSegs.findIndex(s => s.i === best.i);
       return buildMC(
-        "Between which times was the person traveling the fastest?",
+        "Between which times was the person moving the fastest?",
         options,
         correctIndex,
-        "Fastest means the steepest upward section (largest slope)."
+        "Fastest means the steepest line (largest slope magnitude), even if it slopes downward."
       );
     }
 
-    if(qType === "slowestMoving"){
+    if(qType === "slowestAbs"){
+      // slowest while moving = smallest non-zero slope magnitude
       let worst = moving[0];
       for(let i=0;i<moving.length;i++){
-        if(moving[i].speed < worst.speed) worst = moving[i];
+        if(Math.abs(moving[i].speed) < Math.abs(worst.speed)) worst = moving[i];
       }
-      let optionsSegs = shuffle(segs.slice()).filter(s => s.dd > 0).slice(0, Math.min(4, moving.length));
-      if(optionsSegs.length < 3){
-        optionsSegs = shuffle(segs.slice()).slice(0, Math.min(4, segs.length));
-      }
+      let optionsSegs = shuffle(moving.slice()).slice(0, Math.min(4, moving.length));
       if(!optionsSegs.some(s => s.i === worst.i)){
         optionsSegs[0] = worst;
         optionsSegs = shuffle(optionsSegs);
@@ -721,7 +774,7 @@
         "Between which times was the person moving the slowest (but still moving)?",
         options,
         correctIndex,
-        "Slowest while moving means the least steep upward section (smallest positive slope)."
+        "Slowest while moving means the least steep line (smallest slope magnitude)."
       );
     }
 
@@ -742,46 +795,150 @@
       );
     }
 
-    if(qType === "totalDistance"){
-      const total = graph.dist[graph.dist.length-1];
-      const prompt = "What total distance had the person traveled at the end of the graph? (km)";
-      const expl = "Total distance is the final distance value at the last time point.";
+    if(qType === "movingBack"){
+      const seg = choice(movingDown);
+      let optionsSegs = shuffle(segs.slice()).slice(0, Math.min(4, segs.length));
+      if(!optionsSegs.some(s => s.i === seg.i)){
+        optionsSegs[0] = seg;
+        optionsSegs = shuffle(optionsSegs);
+      }
+      const options = optionsSegs.map(intervalLabel);
+      const correctIndex = optionsSegs.findIndex(s => s.i === seg.i);
+      return buildMC(
+        "Between which times was the person moving back toward the start?",
+        options,
+        correctIndex,
+        "A downward sloping line means distance is decreasing while time increases: returning toward the start."
+      );
+    }
+
+    if(qType === "turnAround"){
+      const tTurn = turningPointTime(segs);
+      const prompt = "At what time did the person turn around (change direction)?";
+      const expl = "Turning around is where the graph changes from going up to going down (or down to up).";
+
+      // Make MC with time options
+      const opts = new Set();
+      opts.add(tTurn);
+      while(opts.size < 4){
+        const t = choice(graph.times.slice(1)); // pick existing times
+        opts.add(t);
+      }
+      const options = shuffle(Array.from(opts)).map(t => formatTime(t, timeStyle));
+      const correctIndex = options.findIndex(s => s === formatTime(tTurn, timeStyle));
+      return buildMC(prompt, options, correctIndex, expl);
+    }
+
+    if(qType === "greatestDistance"){
+      const info = maxDistanceInfo(graph);
+      const prompt = "What is the greatest distance from the start on this graph? (km)";
+      const expl = "The greatest distance is the highest y-value reached on the graph.";
+
+      if(useFreeInput){
+        return buildInput(prompt, info.d, "km", expl);
+      }else{
+        const opts = new Set();
+        opts.add(info.d);
+        while(opts.size < 4){
+          let v = info.d + choice([-80,-60,-40,-20,20,40,60,80]);
+          v = Math.max(0, v);
+          v = Math.round(v/10)*10;
+          opts.add(v);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " km");
+        const correctIndex = options.findIndex(s => s === (info.d + " km"));
+        return buildMC(prompt, options, correctIndex, expl);
+      }
+    }
+
+    if(qType === "distanceFromStartEnd"){
+      const endD = graph.dist[graph.dist.length-1];
+      const prompt = "How far from the start is the person at the end of the graph? (km)";
+      const expl = "This is the final y-value (distance) at the last time point.";
+
+      if(useFreeInput){
+        return buildInput(prompt, endD, "km", expl);
+      }else{
+        const opts = new Set();
+        opts.add(endD);
+        while(opts.size < 4){
+          let v = endD + choice([-80,-60,-40,-20,20,40,60,80]);
+          v = Math.max(0, v);
+          v = Math.round(v/10)*10;
+          opts.add(v);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " km");
+        const correctIndex = options.findIndex(s => s === (endD + " km"));
+        return buildMC(prompt, options, correctIndex, expl);
+      }
+    }
+
+    if(qType === "totalDistanceTraveled"){
+      const total = totalDistanceTraveled(segs);
+      const prompt = "What total distance did the person travel in all? (km)";
+      const expl = "Total distance traveled adds up all movement, even when returning (sum of up and down distances).";
+
       if(useFreeInput){
         return buildInput(prompt, total, "km", expl);
+      }else{
+        const opts = new Set();
+        opts.add(total);
+        while(opts.size < 4){
+          let v = total + choice([-80,-60,-40,-20,20,40,60,80]);
+          v = Math.max(0, v);
+          v = Math.round(v/10)*10;
+          opts.add(v);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " km");
+        const correctIndex = options.findIndex(s => s === (total + " km"));
+        return buildMC(prompt, options, correctIndex, expl);
       }
-      const opts = new Set();
-      opts.add(total);
-      while(opts.size < 4){
-        let d = total + choice([-80,-60,-40,-20,20,40,60,80]);
-        d = Math.max(0, d);
-        d = Math.round(d/10)*10;
-        opts.add(d);
+    }
+
+    if(qType === "totalDistanceEnd"){
+      const total = graph.dist[graph.dist.length-1];
+      const prompt = "What distance is shown at the end of the graph? (km)";
+      const expl = "Read the final y-value at the last time point.";
+
+      if(useFreeInput){
+        return buildInput(prompt, total, "km", expl);
+      }else{
+        const opts = new Set();
+        opts.add(total);
+        while(opts.size < 4){
+          let d = total + choice([-80,-60,-40,-20,20,40,60,80]);
+          d = Math.max(0, d);
+          d = Math.round(d/10)*10;
+          opts.add(d);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " km");
+        const correctIndex = options.findIndex(s => s === (total + " km"));
+        return buildMC(prompt, options, correctIndex, expl);
       }
-      const options = shuffle(Array.from(opts)).map(v => v + " km");
-      const correctIndex = options.findIndex(s => s === (total + " km"));
-      return buildMC(prompt, options, correctIndex, expl);
     }
 
     if(qType === "distanceBetween"){
       const seg = choice(segs);
-      const change = seg.dd;
+      const change = Math.abs(seg.dd); // distance traveled during that interval (regardless of direction)
       const prompt = "How many kilometers did the person travel from " + formatTime(seg.t1, timeStyle) +
         " to " + formatTime(seg.t2, timeStyle) + "?";
-      const expl = "Distance traveled on an interval is the rise: distance at end minus distance at start.";
+      const expl = "Travel distance on an interval is the amount of change (absolute change in distance).";
+
       if(useFreeInput){
         return buildInput(prompt, change, "km", expl);
+      }else{
+        const opts = new Set();
+        opts.add(change);
+        while(opts.size < 4){
+          let d = change + choice([-60,-40,-20,20,40,60]);
+          d = Math.max(0, d);
+          d = Math.round(d/10)*10;
+          opts.add(d);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " km");
+        const correctIndex = options.findIndex(s => s === (change + " km"));
+        return buildMC(prompt, options, correctIndex, expl);
       }
-      const opts = new Set();
-      opts.add(change);
-      while(opts.size < 4){
-        let d = change + choice([-60,-40,-20,20,40,60]);
-        d = Math.max(0, d);
-        d = Math.round(d/10)*10;
-        opts.add(d);
-      }
-      const options = shuffle(Array.from(opts)).map(v => v + " km");
-      const correctIndex = options.findIndex(s => s === (change + " km"));
-      return buildMC(prompt, options, correctIndex, expl);
     }
 
     if(qType === "stopDuration" && stopped.length){
@@ -790,40 +947,40 @@
       const prompt = "For how long was the person stopped between " + formatTime(seg.t1, timeStyle) +
         " and " + formatTime(seg.t2, timeStyle) + "? (minutes)";
       const expl = "When the line is horizontal, the person is stopped. Duration is the time difference.";
+
       if(useFreeInput){
         return buildInput(prompt, mins, "min", expl);
+      }else{
+        const opts = new Set();
+        opts.add(mins);
+        while(opts.size < 4){
+          let v = mins + choice([-60,-30,-15,15,30,60]);
+          v = clamp(v, 0, 240);
+          v = Math.round(v/15)*15;
+          opts.add(v);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " min");
+        const correctIndex = options.findIndex(s => s === (mins + " min"));
+        return buildMC(prompt, options, correctIndex, expl);
       }
-      const opts = new Set();
-      opts.add(mins);
-      while(opts.size < 4){
-        let v = mins + choice([-60,-30,-15,15,30,60]);
-        v = clamp(v, 0, 240);
-        v = Math.round(v/15)*15;
-        opts.add(v);
-      }
-      const options = shuffle(Array.from(opts)).map(v => v + " min");
-      const correctIndex = options.findIndex(s => s === (mins + " min"));
-      return buildMC(prompt, options, correctIndex, expl);
     }
 
-    if(qType === "speedCompareTwo" && moving.length >= 2){
+    if(qType === "speedCompareTwoAbs" && moving.length >= 2){
       const a = choice(moving);
       let b = choice(moving);
       let tries = 0;
       while(b.i === a.i && tries < 10){ b = choice(moving); tries++; }
-      tries = 0;
-      while(approxEqual(a.speed, b.speed) && tries < 10){ b = choice(moving); tries++; }
 
-      const options = [ intervalLabel(a), intervalLabel(b), "They are the same speed" ];
+      const options = [ formatInterval(a.t1,a.t2,timeStyle), formatInterval(b.t1,b.t2,timeStyle), "They are the same speed" ];
       let correctIndex = 2;
-      if(a.speed > b.speed) correctIndex = 0;
-      else if(b.speed > a.speed) correctIndex = 1;
+      if(Math.abs(a.speed) > Math.abs(b.speed)) correctIndex = 0;
+      else if(Math.abs(b.speed) > Math.abs(a.speed)) correctIndex = 1;
 
       return buildMC(
         "Which interval shows the faster speed?",
         options,
         correctIndex,
-        "Faster speed means a steeper upward line (greater slope)."
+        "Faster speed means a steeper line (greater slope magnitude), up or down."
       );
     }
 
@@ -833,28 +990,34 @@
       const d = graph.dist[idx];
       const prompt = "What is the distance at time " + formatTime(t, timeStyle) + "? (km)";
       const expl = "Read the y-value (distance) at that time on the graph.";
+
       if(useFreeInput){
         return buildInput(prompt, d, "km", expl);
+      }else{
+        const opts = new Set();
+        opts.add(d);
+        while(opts.size < 4){
+          let v = d + choice([-80,-60,-40,-20,20,40,60,80]);
+          v = Math.max(0, v);
+          v = Math.round(v/10)*10;
+          opts.add(v);
+        }
+        const options = shuffle(Array.from(opts)).map(v => v + " km");
+        const correctIndex = options.findIndex(s => s === (d + " km"));
+        return buildMC(prompt, options, correctIndex, expl);
       }
-      const opts = new Set();
-      opts.add(d);
-      while(opts.size < 4){
-        let v = d + choice([-80,-60,-40,-20,20,40,60,80]);
-        v = Math.max(0, v);
-        v = Math.round(v/10)*10;
-        opts.add(v);
-      }
-      const options = shuffle(Array.from(opts)).map(v => v + " km");
-      const correctIndex = options.findIndex(s => s === (d + " km"));
-      return buildMC(prompt, options, correctIndex, expl);
     }
 
-    return buildMC(
-      "Between which times was the person stopped (not moving)?",
-      segs.slice(0,4).map(intervalLabel),
-      0,
-      "Stopped means a horizontal line."
-    );
+    // fallback
+    const segs2 = segs.slice(0,4);
+    return {
+      type:"mc",
+      prompt:"Between which times was the person stopped (not moving)?",
+      options: segs2.map(s=>formatInterval(s.t1,s.t2,timeStyle)),
+      correctIndex: 0,
+      answerText: segs2[0] ? formatInterval(segs2[0].t1,segs2[0].t2,timeStyle) : "",
+      explanation:"Stopped means a horizontal line."
+    };
   }
 
   function setFeedback(kind, title, text){
@@ -864,13 +1027,11 @@
       '<div class="big">' + title + '</div>' +
       '<div style="color:var(--muted);font-size:13px;line-height:1.35;">' + text + '</div>';
   }
-
   function clearFeedback(){
     feedbackBox.style.display = "none";
     feedbackBox.innerHTML = "";
     feedbackBox.className = "feedback";
   }
-
   function updateScoreBox(){
     scoreBox.textContent = "Score: " + score.correct + " correct out of " + score.total;
   }
@@ -1022,8 +1183,9 @@
     const timeStyle = timeStyleEl.value;
     const maxHours = Number(maxTimeEl.value);
     const allowFreeInput = allowFreeInputEl.checked;
+    const allowReturnTrips = allowReturnTripsEl.checked;
 
-    const graph = generateGraph(timeStyle, maxHours);
+    const graph = generateGraph(timeStyle, maxHours, allowReturnTrips);
     const question = generateQuestion(graph, timeStyle, allowFreeInput);
 
     current = {graph:graph, question:question};
@@ -1054,6 +1216,7 @@
     const timeStyle = timeStyleEl.value;
     const maxHours = Number(maxTimeEl.value);
     const allowFreeInput = allowFreeInputEl.checked;
+    const allowReturnTrips = allowReturnTripsEl.checked;
 
     const n = clamp(Number(wsCountEl.value || 10), 5, 30);
     wsList.innerHTML = "";
@@ -1064,13 +1227,14 @@
     })) : null;
 
     for(let i=1;i<=n;i++){
-      const graph = generateGraph(timeStyle, maxHours);
+      const graph = generateGraph(timeStyle, maxHours, allowReturnTrips);
       const q = generateQuestion(graph, timeStyle, allowFreeInput);
 
       // For printing: prefer MC most of the time
       let qPrint = q;
       if(q.type === "input" && Math.random() < 0.6){
         const correct = q.correctValue;
+        const unit = q.unit;
         const opts = new Set();
         opts.add(correct);
 
@@ -1080,8 +1244,8 @@
           v = Math.round(v/10)*10;
           opts.add(v);
         }
-        const options = shuffle(Array.from(opts)).map(v => v + " " + q.unit);
-        const correctIndex = options.findIndex(s => s === (correct + " " + q.unit));
+        const options = shuffle(Array.from(opts)).map(v => v + " " + unit);
+        const correctIndex = options.findIndex(s => s === (correct + " " + unit));
         qPrint = {
           type:"mc",
           prompt:q.prompt,
