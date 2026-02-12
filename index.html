@@ -18,12 +18,7 @@
     --radius:16px;
     --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   }
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    font-family:var(--font);
-  }
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:var(--font); }
   body.high-contrast{
     --bg:#000;
     --panel:#0c0c0c;
@@ -33,34 +28,15 @@
     --accent:#7fb2ff;
     --shadow:none;
   }
-  .wrap{
-    max-width:1100px;
-    margin:0 auto;
-    padding:16px;
-  }
+  .wrap{ max-width:1100px; margin:0 auto; padding:16px; }
   header{
-    display:flex;
-    gap:12px;
-    align-items:flex-start;
-    justify-content:space-between;
-    flex-wrap:wrap;
-    margin-bottom:12px;
+    display:flex; gap:12px; align-items:flex-start; justify-content:space-between;
+    flex-wrap:wrap; margin-bottom:12px;
   }
-  .title{
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-  }
-  h1{
-    margin:0;
-    font-size:22px;
-    line-height:1.2;
-  }
-  .subtitle{
-    margin:0;
-    color:var(--muted);
-    font-size:14px;
-  }
+  .title{ display:flex; flex-direction:column; gap:4px; }
+  h1{ margin:0; font-size:22px; line-height:1.2; }
+  .subtitle{ margin:0; color:var(--muted); font-size:14px; }
+
   .panel{
     background:var(--panel);
     border:1px solid var(--border);
@@ -68,29 +44,12 @@
     box-shadow:var(--shadow);
     padding:14px;
   }
-  .grid{
-    display:grid;
-    grid-template-columns: 420px 1fr;
-    gap:14px;
-    align-items:start;
-  }
-  @media (max-width: 980px){
-    .grid{ grid-template-columns: 1fr; }
-  }
-  .controls{
-    display:grid;
-    grid-template-columns: repeat(2, minmax(0,1fr));
-    gap:10px;
-  }
-  .control{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-  }
-  label{
-    font-size:12px;
-    color:var(--muted);
-  }
+  .grid{ display:grid; grid-template-columns: 420px 1fr; gap:14px; align-items:start; }
+  @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
+
+  .controls{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; }
+  .control{ display:flex; flex-direction:column; gap:6px; }
+  label{ font-size:12px; color:var(--muted); }
   select, input[type="number"], input[type="text"]{
     width:100%;
     border:1px solid var(--border);
@@ -101,15 +60,9 @@
     font-size:14px;
     outline:none;
   }
-  input[type="checkbox"]{
-    transform: translateY(1px);
-  }
-  .row{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    align-items:center;
-  }
+  input[type="checkbox"]{ transform: translateY(1px); }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
   .btn{
     border:1px solid var(--border);
     background:var(--panel);
@@ -120,130 +73,62 @@
     font-weight:650;
     font-size:14px;
   }
-  .btn.primary{
-    background:var(--accent);
-    border-color:var(--accent);
-    color:#fff;
-  }
-  .btn:disabled{
-    opacity:0.55;
-    cursor:not-allowed;
-  }
-  .hint{
-    color:var(--muted);
-    font-size:13px;
-    line-height:1.35;
-  }
+  .btn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btn:disabled{ opacity:0.55; cursor:not-allowed; }
+
+  .hint{ color:var(--muted); font-size:13px; line-height:1.35; }
+
   .canvasWrap{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    border:1px solid var(--border);
-    border-radius:14px;
+    display:flex; justify-content:center; align-items:center;
+    border:1px solid var(--border); border-radius:14px;
     background:linear-gradient(180deg, rgba(255,255,255,0.0), rgba(0,0,0,0.02));
     padding:10px;
   }
   body.high-contrast .canvasWrap{ background:transparent; }
-  canvas{
-    width:100%;
-    height:auto;
-    max-width:760px;
-    border-radius:12px;
-  }
-  .qTitle{
-    margin:0 0 8px 0;
-    font-size:16px;
-  }
-  .choices{
-    display:grid;
-    grid-template-columns: 1fr;
-    gap:8px;
-    margin-top:10px;
-  }
+  canvas{ width:100%; height:auto; max-width:760px; border-radius:12px; }
+
+  .qTitle{ margin:0 0 8px 0; font-size:16px; }
+  .choices{ display:grid; grid-template-columns: 1fr; gap:8px; margin-top:10px; }
   .choiceBtn{
-    text-align:left;
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:10px 12px;
-    background:var(--panel);
-    cursor:pointer;
-    font-size:14px;
+    text-align:left; border:1px solid var(--border); border-radius:14px;
+    padding:10px 12px; background:var(--panel); cursor:pointer; font-size:14px;
   }
   .choiceBtn:hover{ border-color:var(--accent); }
-  .choiceBtn.correct{
-    border-color:var(--good);
-    outline:2px solid rgba(29,122,42,0.22);
-  }
-  .choiceBtn.wrong{
-    border-color:var(--bad);
-    outline:2px solid rgba(179,38,30,0.20);
-  }
+  .choiceBtn.correct{ border-color:var(--good); outline:2px solid rgba(29,122,42,0.22); }
+  .choiceBtn.wrong{ border-color:var(--bad); outline:2px solid rgba(179,38,30,0.20); }
+
   .feedback{
-    margin-top:10px;
-    padding:10px 12px;
-    border-radius:14px;
-    border:1px solid var(--border);
-    background:var(--panel);
+    margin-top:10px; padding:10px 12px; border-radius:14px;
+    border:1px solid var(--border); background:var(--panel);
   }
   .feedback.good{ border-color:rgba(29,122,42,0.55); }
   .feedback.bad{ border-color:rgba(179,38,30,0.55); }
-  .feedback .big{
-    font-weight:800;
-    margin-bottom:4px;
-  }
+  .feedback .big{ font-weight:800; margin-bottom:4px; }
+
   .footerRow{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    align-items:center;
-    justify-content:space-between;
-    margin-top:10px;
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-top:10px;
   }
-  .scoreBox{
-    color:var(--muted);
-    font-size:13px;
-  }
+  .scoreBox{ color:var(--muted); font-size:13px; }
 
   /* Worksheet */
   .worksheetArea{ display:none; margin-top:14px; }
   .worksheetArea.active{ display:block; }
   .wsHeader{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    gap:12px;
-    flex-wrap:wrap;
-    margin-bottom:10px;
+    display:flex; justify-content:space-between; align-items:flex-end; gap:12px;
+    flex-wrap:wrap; margin-bottom:10px;
   }
-  .wsList{
-    display:grid;
-    grid-template-columns: repeat(2, minmax(0,1fr));
-    gap:12px;
-  }
-  @media (max-width: 980px){
-    .wsList{ grid-template-columns: 1fr; }
-  }
+  .wsList{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:12px; }
+  @media (max-width: 980px){ .wsList{ grid-template-columns: 1fr; } }
   .wsCard{
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:10px;
-    background:var(--panel);
+    border:1px solid var(--border); border-radius:16px; padding:10px; background:var(--panel);
   }
   .wsCard h3{ margin:0 0 8px 0; font-size:14px; }
   .wsCard img{
-    width:100%;
-    border:1px solid var(--border);
-    border-radius:12px;
-    display:block;
-    margin-bottom:8px;
+    width:100%; border:1px solid var(--border); border-radius:12px; display:block; margin-bottom:8px;
   }
   .wsQ{ margin:0; font-size:13px; line-height:1.35; }
   .wsAns{
-    margin-top:8px;
-    border-top:1px dashed var(--border);
-    padding-top:8px;
-    color:var(--muted);
-    font-size:13px;
+    margin-top:8px; border-top:1px dashed var(--border); padding-top:8px; color:var(--muted); font-size:13px;
   }
 
   @media print{
@@ -260,7 +145,7 @@
   <header>
     <div class="title">
       <h1>Time and Distance: Journey Graphs</h1>
-      <p class="subtitle">Steeper = faster. Flat = stopped. Downward = moving back toward the start.</p>
+      <p class="subtitle" id="subtitleText">Basic mode: only moving away or stopping.</p>
     </div>
     <div class="row">
       <button class="btn" id="toggleContrast">High Contrast: Off</button>
@@ -271,6 +156,14 @@
   <div class="grid">
     <div class="panel controlsPanel">
       <div class="controls">
+        <div class="control">
+          <label for="levelMode">Level</label>
+          <select id="levelMode">
+            <option value="basic" selected>Basic</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+
         <div class="control">
           <label for="timeStyle">Time labels (x-axis)</label>
           <select id="timeStyle">
@@ -297,18 +190,20 @@
               <span style="font-size:13px;color:var(--text);">Allow some free input questions</span>
             </label>
           </div>
-          <div class="hint">If this is off, everything stays multiple choice.</div>
+          <div class="hint" id="freeInputHint">
+            Basic mode will only use free input when the answer is on a clear main grid value.
+          </div>
         </div>
 
         <div class="control" style="grid-column:1 / -1;">
-          <label>Graph features</label>
+          <label>Graph readability</label>
           <div class="row" style="gap:10px;">
             <label style="display:flex;gap:8px;align-items:center;">
-              <input type="checkbox" id="allowReturnTrips" checked />
-              <span style="font-size:13px;color:var(--text);">Allow return trips (downward lines)</span>
+              <input type="checkbox" id="minorGrid" checked />
+              <span style="font-size:13px;color:var(--text);">Show minor gridlines (helps exact reading)</span>
             </label>
           </div>
-          <div class="hint">Downward slope means moving back toward the start, not back in time.</div>
+          <div class="hint">Minor lines split each big box into smaller steps so students can count precisely.</div>
         </div>
       </div>
 
@@ -317,12 +212,8 @@
         <button class="btn" id="resetScore">Reset Score</button>
       </div>
 
-      <p class="hint" style="margin:10px 0 0 0;">
-        Key ideas:
-        time always increases (x-axis),
-        distance increases when moving away,
-        distance decreases when returning,
-        flat means stopped.
+      <p class="hint" style="margin:10px 0 0 0;" id="modeHint">
+        Key ideas: steeper = faster, flat = stopped, time always increases.
       </p>
     </div>
 
@@ -399,10 +290,11 @@
   const canvas = document.getElementById("graph");
   const ctx = canvas.getContext("2d");
 
+  const levelModeEl = document.getElementById("levelMode");
   const timeStyleEl = document.getElementById("timeStyle");
   const allowFreeInputEl = document.getElementById("allowFreeInput");
-  const allowReturnTripsEl = document.getElementById("allowReturnTrips");
   const maxTimeEl = document.getElementById("maxTime");
+  const minorGridEl = document.getElementById("minorGrid");
 
   const newQuestionBtn = document.getElementById("newQuestion");
   const resetScoreBtn = document.getElementById("resetScore");
@@ -422,10 +314,28 @@
   const genWorksheetBtn = document.getElementById("genWorksheet");
   const wsList = document.getElementById("wsList");
 
+  const subtitleText = document.getElementById("subtitleText");
+  const modeHint = document.getElementById("modeHint");
+  const freeInputHint = document.getElementById("freeInputHint");
+
   let isWorksheetMode = false;
   let current = null;
   let answered = false;
   let score = {correct:0, total:0};
+
+  function isBasic(){ return levelModeEl.value === "basic"; }
+
+  function setModeTexts(){
+    if(isBasic()){
+      subtitleText.textContent = "Basic mode: only moving away or stopping.";
+      modeHint.textContent = "Key ideas: steeper = faster, flat = stopped, time always increases.";
+      freeInputHint.textContent = "Basic mode will only use free input when the answer is on a clear main grid value.";
+    }else{
+      subtitleText.textContent = "Advanced mode: can include returning toward the start (downward slopes).";
+      modeHint.textContent = "Advanced ideas: returning (downward), turning around, total distance traveled.";
+      freeInputHint.textContent = "Advanced mode can use free input more often. Minor gridlines help exact reading.";
+    }
+  }
 
   function getSegments(graph){
     const segs = [];
@@ -441,23 +351,18 @@
   }
 
   // --- Slope clarity controls ---
-  // Speeds spaced further apart and we avoid picking two that are too close.
-  const SPEEDS_KMH = [25, 45, 65, 85, 105]; // big steps => visually different slopes
-  const MIN_SPEED_DIFF = 18;                // if two moving segments are closer than this, re-pick
+  const SPEEDS_KMH = [25, 45, 65, 85, 105]; // spaced
+  const MIN_SPEED_DIFF = 18;
 
   function pickSeparatedSpeed(existingAbsSpeeds){
-    // existingAbsSpeeds: array of |speed| already used on other moving segments
     for(let tries=0; tries<30; tries++){
       const s = choice(SPEEDS_KMH);
       let ok = true;
       for(let i=0;i<existingAbsSpeeds.length;i++){
-        if(Math.abs(s - existingAbsSpeeds[i]) < MIN_SPEED_DIFF){
-          ok = false; break;
-        }
+        if(Math.abs(s - existingAbsSpeeds[i]) < MIN_SPEED_DIFF){ ok = false; break; }
       }
       if(ok) return s;
     }
-    // fallback
     return choice(SPEEDS_KMH);
   }
 
@@ -493,7 +398,6 @@
     let hasMove = false;
     let hasDown = false;
 
-    // Track chosen speed magnitudes to keep slopes clearly different
     const usedAbsSpeeds = [];
 
     for(let i=1;i<times.length;i++){
@@ -508,28 +412,19 @@
         const downProb = canGoDown ? 0.22 : 0.0;
         const goDown = Math.random() < downProb;
 
-        // pick a separated speed (magnitude)
         let speedMag = pickSeparatedSpeed(usedAbsSpeeds);
         let magnitude = speedMag * dt;
 
-        // Keep mostly whole numbers; for half-hours it will naturally be .5 multiples sometimes.
         if(!approxEqual(magnitude, Math.round(magnitude))){
-          // keep rare .5, but not messy decimals
           magnitude = round1(magnitude);
-          // if still messy, snap
-          if(!approxEqual(magnitude*2, Math.round(magnitude*2))){
-            magnitude = Math.round(magnitude);
-          }
+          if(!approxEqual(magnitude*2, Math.round(magnitude*2))) magnitude = Math.round(magnitude);
         }
-
-        // Snap integer magnitudes to 10km so worksheet looks clean
         if(approxEqual(magnitude, Math.round(magnitude))){
           magnitude = Math.round(magnitude/10)*10;
         }
 
         delta = goDown ? -magnitude : magnitude;
 
-        // keep within bounds (0..420)
         if(d + delta > 420){
           delta = 420 - d;
           delta = Math.floor(delta/10)*10;
@@ -539,7 +434,6 @@
           delta = -Math.floor(Math.abs(delta)/10)*10;
         }
 
-        // If we snapped down to 0 movement, try once more with a different speed
         if(delta === 0){
           speedMag = pickSeparatedSpeed(usedAbsSpeeds);
           magnitude = speedMag * dt;
@@ -550,17 +444,15 @@
           if(d + delta < 0) delta = -d;
         }
 
-        // Record speed magnitude if this segment actually moved
         if(delta !== 0){
           hasMove = true;
-          const absSpeed = Math.abs(delta) / dt; // actual realized speed after snapping
+          const absSpeed = Math.abs(delta) / dt;
           usedAbsSpeeds.push(absSpeed);
         }
         if(delta < 0) hasDown = true;
       }
 
-      d = d + delta;
-      d = clamp(d, 0, 420);
+      d = clamp(d + delta, 0, 420);
       dist.push(d);
     }
 
@@ -569,6 +461,7 @@
       dist[last] = clamp(dist[last-1] + 60, 0, 420);
     }
 
+    // Only do the "encourage a down segment sometimes" in Advanced
     if(allowReturnTrips && !hasDown && Math.random() < 0.55){
       const n = dist.length;
       if(n >= 3 && dist[n-2] > 0){
@@ -590,11 +483,9 @@
     return { times, dist, xTop, yTop };
   }
 
-  function clearCanvas(){
-    ctx.clearRect(0,0,canvas.width, canvas.height);
-  }
+  function clearCanvas(){ ctx.clearRect(0,0,canvas.width, canvas.height); }
 
-  function drawGraph(graph, timeStyle){
+  function drawGraph(graph, timeStyle, showMinor){
     clearCanvas();
 
     const W = canvas.width, H = canvas.height;
@@ -606,36 +497,59 @@
     const borderCol = getComputedStyle(document.body).getPropertyValue("--border").trim() || "#d9d9d9";
     const mutedCol = getComputedStyle(document.body).getPropertyValue("--muted").trim() || "#666";
     const textCol  = getComputedStyle(document.body).getPropertyValue("--text").trim() || "#111";
-    const lineCol = "#b3261e";
 
     ctx.fillStyle = panelCol;
     ctx.fillRect(0,0,W,H);
 
-    ctx.strokeStyle = borderCol;
-    ctx.lineWidth = 1;
-
+    // Major ticks
     let xTick = 60;
-    if(timeStyle !== "hoursOnly" && graph.xTop <= 240 && Math.random() < 0.6) xTick = 30;
+    if(timeStyle !== "hoursOnly" && graph.xTop <= 240) xTick = (Math.random() < 0.6 ? 30 : 60);
     if(timeStyle === "minutesOnly") xTick = (graph.xTop <= 240 ? 30 : 60);
 
     const yTick = (graph.yTop <= 300) ? 50 : 100;
 
+    // Minor ticks: split each major box into 5 parts (so 50 -> 10s, 100 -> 20s)
+    const yMinor = yTick / 5;
+    const xMinor = xTick / 2; // half-step minor lines
+
+    function xToPx(x){ return padL + (x/graph.xTop)*plotW; }
+    function yToPy(y){ return padT + plotH - (y/graph.yTop)*plotH; }
+
+    // Minor grid first (lighter)
+    if(showMinor){
+      ctx.strokeStyle = borderCol;
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = document.body.classList.contains("high-contrast") ? 0.22 : 0.35;
+
+      for(let x=0; x<=graph.xTop; x+=xMinor){
+        if(x % xTick === 0) continue;
+        const px = xToPx(x);
+        ctx.beginPath(); ctx.moveTo(px, padT); ctx.lineTo(px, padT+plotH); ctx.stroke();
+      }
+      for(let y=0; y<=graph.yTop; y+=yMinor){
+        if(y % yTick === 0) continue;
+        const py = yToPy(y);
+        ctx.beginPath(); ctx.moveTo(padL, py); ctx.lineTo(padL+plotW, py); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // Major grid
+    ctx.strokeStyle = borderCol;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = document.body.classList.contains("high-contrast") ? 0.55 : 1;
+
     for(let x=0; x<=graph.xTop; x+=xTick){
-      const px = padL + (x/graph.xTop)*plotW;
-      ctx.beginPath();
-      ctx.moveTo(px, padT);
-      ctx.lineTo(px, padT+plotH);
-      ctx.stroke();
+      const px = xToPx(x);
+      ctx.beginPath(); ctx.moveTo(px, padT); ctx.lineTo(px, padT+plotH); ctx.stroke();
     }
-
     for(let y=0; y<=graph.yTop; y+=yTick){
-      const py = padT + plotH - (y/graph.yTop)*plotH;
-      ctx.beginPath();
-      ctx.moveTo(padL, py);
-      ctx.lineTo(padL+plotW, py);
-      ctx.stroke();
+      const py = yToPy(y);
+      ctx.beginPath(); ctx.moveTo(padL, py); ctx.lineTo(padL+plotW, py); ctx.stroke();
     }
+    ctx.globalAlpha = 1;
 
+    // Axes
     ctx.strokeStyle = textCol;
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -644,31 +558,32 @@
     ctx.lineTo(padL+plotW, padT+plotH);
     ctx.stroke();
 
+    // Labels
     ctx.fillStyle = textCol;
     ctx.font = "700 14px system-ui, -apple-system, Segoe UI, Arial";
     ctx.fillText("Distance (km)", 12, 18);
     ctx.fillText("Time", padL + plotW - 40, padT + plotH + 48);
 
+    // Tick labels
     ctx.fillStyle = mutedCol;
     ctx.font = "12px system-ui, -apple-system, Segoe UI, Arial";
 
     for(let x=0; x<=graph.xTop; x+=xTick){
-      const px = padL + (x/graph.xTop)*plotW;
-      const label = formatTime(x, timeStyle);
+      const px = xToPx(x);
       ctx.textAlign = "center";
-      ctx.fillText(label, px, padT + plotH + 20);
+      ctx.fillText(formatTime(x, timeStyle), px, padT + plotH + 20);
     }
-
     for(let y=0; y<=graph.yTop; y+=yTick){
-      const py = padT + plotH - (y/graph.yTop)*plotH;
+      const py = yToPy(y);
       ctx.textAlign = "right";
       ctx.fillText(String(y), padL - 8, py + 4);
     }
 
+    // Path
     function toX(t){ return padL + (t/graph.xTop)*plotW; }
     function toY(d){ return padT + plotH - (d/graph.yTop)*plotH; }
 
-    ctx.strokeStyle = lineCol;
+    ctx.strokeStyle = "#b3261e";
     ctx.lineWidth = 6;
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
@@ -679,7 +594,8 @@
     }
     ctx.stroke();
 
-    ctx.fillStyle = lineCol;
+    // Points
+    ctx.fillStyle = "#b3261e";
     for(let i=0;i<graph.times.length;i++){
       ctx.beginPath();
       ctx.arc(toX(graph.times[i]), toY(graph.dist[i]), 5, 0, Math.PI*2);
@@ -697,10 +613,7 @@
     let bestD = graph.dist[0];
     let bestT = graph.times[0];
     for(let i=1;i<graph.dist.length;i++){
-      if(graph.dist[i] > bestD){
-        bestD = graph.dist[i];
-        bestT = graph.times[i];
-      }
+      if(graph.dist[i] > bestD){ bestD = graph.dist[i]; bestT = graph.times[i]; }
     }
     return {d:bestD, t:bestT};
   }
@@ -715,28 +628,28 @@
     return null;
   }
 
-  // Ensure fastest/slowest isn't too close:
-  // If top two slope magnitudes are too close, we regen graph/question.
-  const MIN_SPEED_GAP_FOR_QUESTIONS = 15; // km/h
-
-  function slopeGapOkForFastest(movingSegs){
+  const MIN_SPEED_GAP_FOR_QUESTIONS = 15;
+  function slopeGapOk(movingSegs){
     if(movingSegs.length < 2) return true;
     const mags = movingSegs.map(s => Math.abs(s.speed)).sort((a,b)=>b-a);
     return (mags[0] - mags[1]) >= MIN_SPEED_GAP_FOR_QUESTIONS;
   }
-  function slopeGapOkForSlowest(movingSegs){
-    if(movingSegs.length < 2) return true;
-    const mags = movingSegs.map(s => Math.abs(s.speed)).sort((a,b)=>a-b);
-    return (mags[1] - mags[0]) >= MIN_SPEED_GAP_FOR_QUESTIONS;
+
+  function isNiceDistanceAnswer(v){
+    // Basic mode: only accept free input if it's very clear (multiples of 10 or 50)
+    // This is intentionally strict to reduce "eyeballing" frustration.
+    return (v % 50 === 0) || (v % 10 === 0);
   }
 
-  function generateQuestion(graph, timeStyle, allowFreeInput){
+  function generateQuestion(graph, timeStyle, allowFreeInput, basicMode){
     const segs = getSegments(graph);
     const moving = segs.filter(s => s.dd !== 0);
     const movingDown = segs.filter(s => s.dd < 0);
     const stopped = segs.filter(s => s.dd === 0);
 
     const types = [];
+
+    // Core (both modes)
     if(moving.length >= 1) types.push("fastestAbs");
     if(moving.length >= 2) types.push("slowestAbs");
     if(stopped.length >= 1) types.push("stopped");
@@ -746,26 +659,21 @@
     if(moving.length >= 2) types.push("speedCompareTwoAbs");
     types.push("distanceAtTime");
 
-    if(movingDown.length >= 1) types.push("movingBack");
-    const turnT = turningPointTime(segs);
-    if(turnT !== null) types.push("turnAround");
-    types.push("greatestDistance");
-    types.push("distanceFromStartEnd");
-    if(movingDown.length >= 1) types.push("totalDistanceTraveled");
+    // Advanced-only concepts
+    if(!basicMode){
+      if(movingDown.length >= 1) types.push("movingBack");
+      const turnT = turningPointTime(segs);
+      if(turnT !== null) types.push("turnAround");
+      types.push("greatestDistance");
+      types.push("distanceFromStartEnd");
+      if(movingDown.length >= 1) types.push("totalDistanceTraveled");
+    }else{
+      // In Basic mode, we still allow "greatest distance" sometimes because it’s just "highest point"
+      types.push("greatestDistance_basic");
+    }
 
     const qType = choice(types);
 
-    const useFreeInput = allowFreeInput && (
-      qType === "totalDistanceEnd" ||
-      qType === "distanceBetween" ||
-      qType === "stopDuration" ||
-      qType === "distanceAtTime" ||
-      qType === "greatestDistance" ||
-      qType === "totalDistanceTraveled" ||
-      qType === "distanceFromStartEnd"
-    ) && (Math.random() < 0.40);
-
-    function intervalLabel(s){ return formatInterval(s.t1, s.t2, timeStyle); }
     function buildMC(prompt, options, correctIndex, explanation){
       return {type:"mc", prompt, options, correctIndex, answerText: options[correctIndex], explanation};
     }
@@ -773,23 +681,35 @@
       return {type:"input", prompt, correctValue, unit, explanation};
     }
 
+    // Free input selection rules:
+    // - Advanced: normal (some free input)
+    // - Basic: only if the correct answer is "nice" and clearly readable
+    function wantInputForValue(value, unit){
+      if(!allowFreeInput) return false;
+      if(!basicMode) return (Math.random() < 0.40);
+      if(unit === "km") return (Math.random() < 0.25) && isNiceDistanceAnswer(value);
+      if(unit === "min") return (Math.random() < 0.25) && (value % 15 === 0);
+      return false;
+    }
+
     if(qType === "fastestAbs"){
       let best = moving[0];
       for(const s of moving){ if(Math.abs(s.speed) > Math.abs(best.speed)) best = s; }
 
+      // options from segments
       let optionsSegs = shuffle(segs.slice()).slice(0, Math.min(4, segs.length));
       if(!optionsSegs.some(s => s.i === best.i)){
         optionsSegs[0] = best;
         optionsSegs = shuffle(optionsSegs);
       }
-      const options = optionsSegs.map(intervalLabel);
+      const options = optionsSegs.map(s => formatInterval(s.t1, s.t2, timeStyle));
       const correctIndex = optionsSegs.findIndex(s => s.i === best.i);
 
       return buildMC(
         "Between which times was the person moving the fastest?",
         options,
         correctIndex,
-        "Fastest means the steepest line (largest slope magnitude), even if it slopes downward."
+        "Fastest means the steepest line (largest slope magnitude)."
       );
     }
 
@@ -802,7 +722,7 @@
         optionsSegs[0] = worst;
         optionsSegs = shuffle(optionsSegs);
       }
-      const options = optionsSegs.map(intervalLabel);
+      const options = optionsSegs.map(s => formatInterval(s.t1, s.t2, timeStyle));
       const correctIndex = optionsSegs.findIndex(s => s.i === worst.i);
 
       return buildMC(
@@ -820,8 +740,9 @@
         optionsSegs[0] = stopSeg;
         optionsSegs = shuffle(optionsSegs);
       }
-      const options = optionsSegs.map(intervalLabel);
+      const options = optionsSegs.map(s => formatInterval(s.t1, s.t2, timeStyle));
       const correctIndex = optionsSegs.findIndex(s => s.i === stopSeg.i);
+
       return buildMC(
         "Between which times was the person stopped (not moving)?",
         options,
@@ -837,8 +758,9 @@
         optionsSegs[0] = seg;
         optionsSegs = shuffle(optionsSegs);
       }
-      const options = optionsSegs.map(intervalLabel);
+      const options = optionsSegs.map(s => formatInterval(s.t1, s.t2, timeStyle));
       const correctIndex = optionsSegs.findIndex(s => s.i === seg.i);
+
       return buildMC(
         "Between which times was the person moving back toward the start?",
         options,
@@ -851,21 +773,24 @@
       const tTurn = turningPointTime(segs);
       const prompt = "At what time did the person turn around (change direction)?";
       const expl = "Turning around is where the graph changes from going up to going down (or down to up).";
-      const opts = new Set();
-      opts.add(tTurn);
+
+      const opts = new Set([tTurn]);
       while(opts.size < 4){
         opts.add(choice(graph.times.slice(1)));
       }
       const options = shuffle(Array.from(opts)).map(t => formatTime(t, timeStyle));
       const correctIndex = options.findIndex(s => s === formatTime(tTurn, timeStyle));
+
       return buildMC(prompt, options, correctIndex, expl);
     }
 
-    if(qType === "greatestDistance"){
+    if(qType === "greatestDistance" || qType === "greatestDistance_basic"){
       const info = maxDistanceInfo(graph);
       const prompt = "What is the greatest distance from the start on this graph? (km)";
       const expl = "The greatest distance is the highest y-value reached on the graph.";
-      if(useFreeInput) return buildInput(prompt, info.d, "km", expl);
+
+      const useInput = wantInputForValue(info.d, "km");
+      if(useInput) return buildInput(prompt, info.d, "km", expl);
 
       const opts = new Set([info.d]);
       while(opts.size < 4){
@@ -875,6 +800,7 @@
       }
       const options = shuffle(Array.from(opts)).map(v => v + " km");
       const correctIndex = options.findIndex(s => s === (info.d + " km"));
+
       return buildMC(prompt, options, correctIndex, expl);
     }
 
@@ -882,7 +808,9 @@
       const endD = graph.dist[graph.dist.length-1];
       const prompt = "How far from the start is the person at the end of the graph? (km)";
       const expl = "This is the final y-value (distance) at the last time point.";
-      if(useFreeInput) return buildInput(prompt, endD, "km", expl);
+
+      const useInput = wantInputForValue(endD, "km");
+      if(useInput) return buildInput(prompt, endD, "km", expl);
 
       const opts = new Set([endD]);
       while(opts.size < 4){
@@ -892,6 +820,7 @@
       }
       const options = shuffle(Array.from(opts)).map(v => v + " km");
       const correctIndex = options.findIndex(s => s === (endD + " km"));
+
       return buildMC(prompt, options, correctIndex, expl);
     }
 
@@ -899,7 +828,9 @@
       const total = totalDistanceTraveled(segs);
       const prompt = "What total distance did the person travel in all? (km)";
       const expl = "Total distance traveled adds up all movement, even when returning (sum of up and down distances).";
-      if(useFreeInput) return buildInput(prompt, total, "km", expl);
+
+      const useInput = wantInputForValue(total, "km");
+      if(useInput) return buildInput(prompt, total, "km", expl);
 
       const opts = new Set([total]);
       while(opts.size < 4){
@@ -909,23 +840,27 @@
       }
       const options = shuffle(Array.from(opts)).map(v => v + " km");
       const correctIndex = options.findIndex(s => s === (total + " km"));
+
       return buildMC(prompt, options, correctIndex, expl);
     }
 
     if(qType === "totalDistanceEnd"){
-      const total = graph.dist[graph.dist.length-1];
+      const endD = graph.dist[graph.dist.length-1];
       const prompt = "What distance is shown at the end of the graph? (km)";
       const expl = "Read the final y-value at the last time point.";
-      if(useFreeInput) return buildInput(prompt, total, "km", expl);
 
-      const opts = new Set([total]);
+      const useInput = wantInputForValue(endD, "km");
+      if(useInput) return buildInput(prompt, endD, "km", expl);
+
+      const opts = new Set([endD]);
       while(opts.size < 4){
-        let v = Math.max(0, total + choice([-80,-60,-40,-20,20,40,60,80]));
+        let v = Math.max(0, endD + choice([-80,-60,-40,-20,20,40,60,80]));
         v = Math.round(v/10)*10;
         opts.add(v);
       }
       const options = shuffle(Array.from(opts)).map(v => v + " km");
-      const correctIndex = options.findIndex(s => s === (total + " km"));
+      const correctIndex = options.findIndex(s => s === (endD + " km"));
+
       return buildMC(prompt, options, correctIndex, expl);
     }
 
@@ -935,7 +870,9 @@
       const prompt = "How many kilometers did the person travel from " + formatTime(seg.t1, timeStyle) +
         " to " + formatTime(seg.t2, timeStyle) + "?";
       const expl = "Travel distance on an interval is the amount of change (absolute change in distance).";
-      if(useFreeInput) return buildInput(prompt, change, "km", expl);
+
+      const useInput = wantInputForValue(change, "km");
+      if(useInput) return buildInput(prompt, change, "km", expl);
 
       const opts = new Set([change]);
       while(opts.size < 4){
@@ -945,6 +882,7 @@
       }
       const options = shuffle(Array.from(opts)).map(v => v + " km");
       const correctIndex = options.findIndex(s => s === (change + " km"));
+
       return buildMC(prompt, options, correctIndex, expl);
     }
 
@@ -954,7 +892,9 @@
       const prompt = "For how long was the person stopped between " + formatTime(seg.t1, timeStyle) +
         " and " + formatTime(seg.t2, timeStyle) + "? (minutes)";
       const expl = "When the line is horizontal, the person is stopped. Duration is the time difference.";
-      if(useFreeInput) return buildInput(prompt, mins, "min", expl);
+
+      const useInput = wantInputForValue(mins, "min");
+      if(useInput) return buildInput(prompt, mins, "min", expl);
 
       const opts = new Set([mins]);
       while(opts.size < 4){
@@ -964,6 +904,7 @@
       }
       const options = shuffle(Array.from(opts)).map(v => v + " min");
       const correctIndex = options.findIndex(s => s === (mins + " min"));
+
       return buildMC(prompt, options, correctIndex, expl);
     }
 
@@ -987,7 +928,7 @@
         "Which interval shows the faster speed?",
         options,
         correctIndex,
-        "Faster speed means a steeper line (greater slope magnitude), up or down."
+        "Faster speed means a steeper line (greater slope magnitude)."
       );
     }
 
@@ -997,7 +938,9 @@
       const d = graph.dist[idx];
       const prompt = "What is the distance at time " + formatTime(t, timeStyle) + "? (km)";
       const expl = "Read the y-value (distance) at that time on the graph.";
-      if(useFreeInput) return buildInput(prompt, d, "km", expl);
+
+      const useInput = wantInputForValue(d, "km");
+      if(useInput) return buildInput(prompt, d, "km", expl);
 
       const opts = new Set([d]);
       while(opts.size < 4){
@@ -1007,19 +950,18 @@
       }
       const options = shuffle(Array.from(opts)).map(v => v + " km");
       const correctIndex = options.findIndex(s => s === (d + " km"));
+
       return buildMC(prompt, options, correctIndex, expl);
     }
 
-    // fallback
+    // Fallback
     const s0 = segs[0];
-    return {
-      type:"mc",
-      prompt:"Between which times was the person stopped (not moving)?",
-      options: segs.slice(0,4).map(s=>formatInterval(s.t1,s.t2,timeStyle)),
-      correctIndex: 0,
-      answerText: s0 ? formatInterval(s0.t1,s0.t2,timeStyle) : "",
-      explanation:"Stopped means a horizontal line."
-    };
+    return buildMC(
+      "Between which times was the person stopped (not moving)?",
+      segs.slice(0,4).map(s => formatInterval(s.t1,s.t2,timeStyle)),
+      0,
+      s0 ? "Stopped means a horizontal line." : "Stopped means a horizontal line."
+    );
   }
 
   function setFeedback(kind, title, text){
@@ -1146,7 +1088,6 @@
       setFeedback("bad", "Type an answer first.", "Then press Check.");
       return;
     }
-
     const m = raw.match(/-?\d+(\.\d+)?/);
     if(!m){
       setFeedback("bad", "That does not look like a number.", "Try again.");
@@ -1179,36 +1120,42 @@
   }
 
   function buildNew(){
+    const basicMode = isBasic();
     const timeStyle = timeStyleEl.value;
     const maxHours = Number(maxTimeEl.value);
     const allowFreeInput = allowFreeInputEl.checked;
-    const allowReturnTrips = allowReturnTripsEl.checked;
+    const showMinor = minorGridEl.checked;
 
-    // Regenerate until slope questions have a clear winner (avoids near-parallel confusion)
+    // Only Advanced allows return trips
+    const allowReturnTrips = !basicMode;
+
     for(let tries=0; tries<25; tries++){
       const graph = generateGraph(timeStyle, maxHours, allowReturnTrips);
       const segs = getSegments(graph);
       const moving = segs.filter(s => s.dd !== 0);
 
-      // If a fastest/slowest question is selected later, we want this graph to be safe.
-      // We enforce clear gaps among moving speeds generally.
-      const okFast = slopeGapOkForFastest(moving);
-      const okSlow = slopeGapOkForSlowest(moving);
+      // Keep slope winners visible
+      if(!slopeGapOk(moving)) continue;
 
-      if(okFast && okSlow){
-        const question = generateQuestion(graph, timeStyle, allowFreeInput);
-        current = {graph, question};
-        drawGraph(graph, timeStyle);
-        renderQuestion(question);
-        return;
+      // In Basic mode, guarantee no down segments (extra safety)
+      if(basicMode){
+        const hasDown = segs.some(s => s.dd < 0);
+        if(hasDown) continue;
       }
+
+      const question = generateQuestion(graph, timeStyle, allowFreeInput, basicMode);
+
+      current = {graph, question};
+      drawGraph(graph, timeStyle, showMinor);
+      renderQuestion(question);
+      return;
     }
 
-    // Fallback (should be rare)
+    // Fallback (rare)
     const graph = generateGraph(timeStyle, maxHours, allowReturnTrips);
-    const question = generateQuestion(graph, timeStyle, allowFreeInput);
+    const question = generateQuestion(graph, timeStyle, allowFreeInput, basicMode);
     current = {graph, question};
-    drawGraph(graph, timeStyle);
+    drawGraph(graph, timeStyle, showMinor);
     renderQuestion(question);
   }
 
@@ -1231,10 +1178,12 @@
   }
 
   function generateWorksheet(){
+    const basicMode = isBasic();
     const timeStyle = timeStyleEl.value;
     const maxHours = Number(maxTimeEl.value);
     const allowFreeInput = allowFreeInputEl.checked;
-    const allowReturnTrips = allowReturnTripsEl.checked;
+    const showMinor = minorGridEl.checked;
+    const allowReturnTrips = !basicMode;
 
     const n = clamp(Number(wsCountEl.value || 10), 5, 30);
     wsList.innerHTML = "";
@@ -1247,17 +1196,20 @@
     for(let i=1;i<=n;i++){
       let graph = null;
 
-      // Ensure worksheet graphs also avoid near-parallel slopes
       for(let tries=0; tries<25; tries++){
         const g = generateGraph(timeStyle, maxHours, allowReturnTrips);
-        const moving = getSegments(g).filter(s => s.dd !== 0);
-        if(slopeGapOkForFastest(moving) && slopeGapOkForSlowest(moving)){
-          graph = g; break;
-        }
+        const segs = getSegments(g);
+        const moving = segs.filter(s => s.dd !== 0);
+
+        if(!slopeGapOk(moving)) continue;
+        if(basicMode && segs.some(s => s.dd < 0)) continue;
+
+        graph = g;
+        break;
       }
       if(!graph) graph = generateGraph(timeStyle, maxHours, allowReturnTrips);
 
-      const q = generateQuestion(graph, timeStyle, allowFreeInput);
+      const q = generateQuestion(graph, timeStyle, allowFreeInput, basicMode);
 
       // For printing: prefer MC most of the time
       let qPrint = q;
@@ -1268,22 +1220,16 @@
 
         while(opts.size < 4){
           let v = Math.max(0, correct + choice([-80,-60,-40,-20,20,40,60,80]));
-          v = Math.round(v/10)*10;
+          if(unit === "min") v = clamp(correct + choice([-60,-30,-15,15,30,60]), 0, 240);
+          v = (unit === "min") ? Math.round(v/15)*15 : Math.round(v/10)*10;
           opts.add(v);
         }
         const options = shuffle(Array.from(opts)).map(v => v + " " + unit);
         const correctIndex = options.findIndex(s => s === (correct + " " + unit));
-        qPrint = {
-          type:"mc",
-          prompt:q.prompt,
-          options,
-          correctIndex,
-          answerText: options[correctIndex],
-          explanation:q.explanation
-        };
+        qPrint = { type:"mc", prompt:q.prompt, options, correctIndex, answerText: options[correctIndex], explanation:q.explanation };
       }
 
-      drawGraph(graph, timeStyle);
+      drawGraph(graph, timeStyle, showMinor);
       const img = canvas.toDataURL("image/png");
 
       const card = document.createElement("div");
@@ -1307,7 +1253,7 @@
 
     if(saved){
       current = saved;
-      drawGraph(current.graph, timeStyleEl.value);
+      drawGraph(current.graph, timeStyleEl.value, minorGridEl.checked);
       renderQuestion(current.question);
     }else{
       clearCanvas();
@@ -1322,9 +1268,7 @@
   function setModeWorksheet(on){
     isWorksheetMode = on;
     worksheetArea.classList.toggle("active", on);
-    document.querySelectorAll(".gameOnly").forEach(el => {
-      el.style.display = on ? "none" : "block";
-    });
+    document.querySelectorAll(".gameOnly").forEach(el => { el.style.display = on ? "none" : "block"; });
     toggleModeBtn.textContent = "Mode: " + (on ? "Worksheet" : "Game");
   }
 
@@ -1332,7 +1276,7 @@
     document.body.classList.toggle("high-contrast", on);
     toggleContrastBtn.textContent = "High Contrast: " + (on ? "On" : "Off");
     if(current && !isWorksheetMode){
-      drawGraph(current.graph, timeStyleEl.value);
+      drawGraph(current.graph, timeStyleEl.value, minorGridEl.checked);
     }
   }
 
@@ -1366,9 +1310,23 @@
     }
   });
 
+  // UI changes that should redraw / update text
+  levelModeEl.addEventListener("change", () => {
+    setModeTexts();
+    if(current && !isWorksheetMode){
+      buildNew(); // regenerate so Basic never shows return trips
+    }
+  });
+
   timeStyleEl.addEventListener("change", () => {
     if(current && !isWorksheetMode){
-      drawGraph(current.graph, timeStyleEl.value);
+      drawGraph(current.graph, timeStyleEl.value, minorGridEl.checked);
+    }
+  });
+
+  minorGridEl.addEventListener("change", () => {
+    if(current && !isWorksheetMode){
+      drawGraph(current.graph, timeStyleEl.value, minorGridEl.checked);
     }
   });
 
@@ -1386,6 +1344,7 @@
   });
 
   updateScoreBox();
+  setModeTexts();
   setContrast(false);
   setModeWorksheet(false);
 
