@@ -515,11 +515,11 @@
     function xToPx(x){ return padL + (x/graph.xTop)*plotW; }
     function yToPy(y){ return padT + plotH - (y/graph.yTop)*plotH; }
 
-    // Minor grid first (lighter)
+    // Minor grid first (darker)
     if(showMinor){
-      ctx.strokeStyle = borderCol;
-      ctx.lineWidth = 1;
-      ctx.globalAlpha = document.body.classList.contains("high-contrast") ? 0.22 : 0.35;
+      ctx.strokeStyle = document.body.classList.contains("high-contrast") ? "#777" : "#888";
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = document.body.classList.contains("high-contrast") ? 0.65 : 0.7;
 
       for(let x=0; x<=graph.xTop; x+=xMinor){
         if(x % xTick === 0) continue;
@@ -535,9 +535,9 @@
     }
 
     // Major grid
-    ctx.strokeStyle = borderCol;
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = document.body.classList.contains("high-contrast") ? 0.55 : 1;
+    ctx.strokeStyle = document.body.classList.contains("high-contrast") ? "#aaa" : "#555";
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 1;
 
     for(let x=0; x<=graph.xTop; x+=xTick){
       const px = xToPx(x);
